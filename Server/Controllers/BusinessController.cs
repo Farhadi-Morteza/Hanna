@@ -40,6 +40,9 @@ namespace Server.Controllers
                 var result =
                        await UnitOfWork.BusinessRepository.GetIndexByIdAsync(id: id);//.GetByIdAsync(id: id);
 
+
+
+
                 if (result == null)
                 {
                     return NotFound(Resources.InformationMessages.NotFount);
