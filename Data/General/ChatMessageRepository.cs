@@ -10,6 +10,8 @@ namespace Data.General
 
         public async Task<List<Models.ChatMessage>> GetConversationAsync(Guid ContactId)
         {
+
+
             var messages =
                 await DbSet
                 .Where(w => w.FromUserId == ContactId)
