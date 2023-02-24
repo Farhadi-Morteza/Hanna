@@ -19,7 +19,6 @@ namespace Server.Controllers
                 var result =
                     await UnitOfWork.BusinessRepository.GetIndexAsync();
 
-
                 if (result == null)
                 {
                     return NotFound();
