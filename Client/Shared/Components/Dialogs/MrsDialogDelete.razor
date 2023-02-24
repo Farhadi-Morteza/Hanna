@@ -1,0 +1,36 @@
+﻿@namespace MrsComponent
+
+<MudDialog>
+    
+    <DialogContent>
+        <MudText>@(Resources.Dialog.DeleteConfirm)</MudText>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="@(() => Cancel())" Color="Color.Default" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel">@Resources.Buttoms.Cancel</MudButton>
+        <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="Submit" StartIcon="@Icons.Material.Filled.Delete">@Resources.Buttoms.Delete</MudButton>
+    </DialogActions>
+
+</MudDialog>
+
+
+
+@code 
+{      
+    protected override void OnInitialized()
+    {
+        MudDialog.SetTitle(Resources.DataDictionary.Warning);
+        MudDialog.Options.CloseButton = true;
+        MudDialog.Options.NoHeader = false;
+        MudDialog.Options.MaxWidth = MaxWidth.Medium ;
+        MudDialog.Options.Position = DialogPosition.TopCenter;
+
+        MudDialog.SetOptions(MudDialog.Options);
+    }
+
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+    void Cancel() => MudDialog.Cancel();
+}

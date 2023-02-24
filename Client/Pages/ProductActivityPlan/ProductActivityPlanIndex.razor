@@ -1,0 +1,158 @@
+﻿@page  "/ProductActivityPlans/Index/{ActivityPlanId}"
+@inject ProductActivityPlanService productActivityPlanService
+@inject ActivityPlanService activityPlanService
+
+@inject NavigationManager navigationManager
+@inject IDialogService dialogService
+@inject ISnackbar snackbar
+
+<PageTitle>@(Resources.DataDictionary.ProductActivityPlanList)</PageTitle>
+
+<MrsGrid Justify="Justify.Center"> 
+
+    <MudItem xs ="11">
+        <MudPaper> 
+            <MudContainer>
+                <br />
+                <MudGrid>
+
+                    <MudStack Row = "true" Spacing = "@(Infrastructure.Constant.ButtonSpacing)">                                             
+                        <MrsButtonCreate ButtonType="ButtonType.Button" OnClick="@(() => Create())" /> 
+                        <MrsButtonReturn ButtonType="ButtonType.Button" OnClick="@(() => Back())" />  
+                        <MrsButtonNextStep ButtonType="ButtonType.Button" OnClick="@(() => NextStep())" />  
+                    </MudStack>
+                <br />
+                </MudGrid> 
+
+                <br />
+
+                <MrsCardContent>
+                    <MudGrid>
+                
+                    <MudItem xs="12" sm="6" md="6">
+                        <MudField Label="@(Resources.DataDictionary.PlanTitle)" Variant="Variant.Filled" Margin="Margin.Dense">@(ActivityPlanTitel.PlanTitel)</MudField>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="6">
+                        <MudField Label="@(Resources.DataDictionary.Year)" Variant="Variant.Filled" Margin="Margin.Dense">@(ActivityPlanTitel.Year)</MudField>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudField Label="@(Resources.DataDictionary.PrincipalBusiness)" Variant="Variant.Filled" Margin="Margin.Dense">@(ActivityPlanTitel.PrincipalBusiness)</MudField>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudField Label="@(Resources.DataDictionary.Business)" Variant="Variant.Filled" Margin="Margin.Dense">@(ActivityPlanTitel.Business)</MudField>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudField Label="@(Resources.DataDictionary.Activity)" Variant="Variant.Filled" Margin="Margin.Dense">@(ActivityPlanTitel.Activity)</MudField>
+                    </MudItem>
+               
+                </MudGrid>
+                
+                <br />
+                </MrsCardContent>
+            </MudContainer>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="11" Style="text-align:center">
+        <MrsSpinLoader IsLoading="@(ProductActivityPlan == null)">
+
+            <MrsTable Items="@ProductActivityPlan"                   
+                      Dense="true">
+
+                <HeaderContent>
+                    <MrsTh>@(Resources.DataDictionary.Product)</MrsTh>
+                    <MrsTh></MrsTh>
+
+                </HeaderContent>
+                
+                <RowTemplate>
+                    <MudTd DataLabel="@(Resources.DataDictionary.PrincipalBusiness)">@context.Product?.Name</MudTd>
+                    <MudTd Style="text-align:end">
+                        <MudIconButton OnClick="() => Delete(context)" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Class="m-2" Color="Color.Error"></MudIconButton>
+                        <MudIconButton OnClick="() => Edit(context)" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Class="m-2" Color="Color.Info" />
+                    </MudTd>
+                </RowTemplate>
+
+
+            </MrsTable>
+        </MrsSpinLoader>
+     
+    </MudItem>
+
+
+</MrsGrid>
+
+@code 
+{
+    #region Constructor ================================================================================================
+
+    protected async override Task OnInitializedAsync()
+    {
+        ActivityPlanTitel =
+            await activityPlanService.GetActivityPlanTitelbyId(ActivityPlanId);
+
+        ProductActivityPlan =
+            await productActivityPlanService.GetIndexByActivityPlanId(activityPlanId: ActivityPlanId);
+    }
+
+
+    #endregion =========================================================================================================
+
+    #region Properties =================================================================================================
+
+    public ViewModels.ActivityPlanTitelViewModel ActivityPlanTitel { get; set; } =
+        new ViewModels.ActivityPlanTitelViewModel();
+
+    public IList<Models.ProductActivityPlan>? ProductActivityPlan{ get; set; }
+
+    [Parameter]
+    public string ActivityPlanId { get; set; } = string.Empty;
+
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+    public void Create()
+    {
+        navigationManager.NavigateTo(uri: $"{Resources.LinkCaptions.ProductActivityPlan_Create}/{ActivityPlanId}", forceLoad: false);
+    }
+
+    private void Edit(Models.ProductActivityPlan editEntity)
+    {
+        navigationManager.NavigateTo(uri: $"{Resources.LinkCaptions.ProductActivityPlan_Edit}/{editEntity.Id}", forceLoad: false);
+    }
+
+    private async Task Delete(Models.ProductActivityPlan deleteEntity)
+    {
+        var dialog = dialogService.Show<MrsDialogDelete>();
+        var result = await dialog.Result;
+
+        if (result.Cancelled == false)
+        {
+            bool Isdeleted = await productActivityPlanService.DeleteAsync(deleteEntity.Id.ToString());
+
+            if (Isdeleted)
+            {
+                ProductActivityPlan?.Remove(deleteEntity);               
+                snackbar.Add($"{Resources.InformationMessages.DeleteSuccess}", Severity.Success, config => { config.Icon = Icons.Filled.Delete; });                
+            }
+            else
+            {
+                snackbar.Add($"{Resources.InformationMessages.DeleteFail}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });
+            }
+        }
+    }
+
+    private void Back()
+    {
+        navigationManager.NavigateTo(uri: $"{Resources.LinkCaptions.ActivityPlan_Edit}/{ActivityPlanId}", forceLoad: false);
+    }
+
+    private void NextStep()
+    {
+        navigationManager.NavigateTo(uri: $"{Resources.LinkCaptions.ActivityPlan_Summary}/{ActivityPlanId}", forceLoad: false);
+    }
+
+    #endregion =========================================================================================================
+
+}

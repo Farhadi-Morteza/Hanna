@@ -1,0 +1,162 @@
+﻿@page "/"
+@page "/Login"
+@layout LoginLayout
+@inject AuthService authService
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject ILocalStorageService localStorageService
+@inject NavigationManager navigationManager
+
+<PageTitle>@(Resources.DataDictionary.Login)</PageTitle>
+
+<MrsContainer MaxWidth="MaxWidth.ExtraSmall">
+    <EditForm Model="@(Model)" OnValidSubmit="@(() => HandleValidSubmit())" OnInvalidSubmit="@(() => HandleInvalidSubmit())">
+        <DataAnnotationsValidator />
+
+        <MudItem xs="12">
+            <MudText Typo="Typo.h6" Class="ml-4">@(Resources.DataDictionary.ApplicationName) </MudText>
+        </MudItem>
+
+        <MrsCard>
+
+            <MrsCardHeader>
+                <MudText Typo="Typo.subtitle2">@($"{Resources.DataDictionary.Login}")</MudText>
+            </MrsCardHeader>
+
+            <MrsCardContent>
+                <MrsGrid>
+
+                    @if (ShowAlert)
+                    {
+                        <MudItem xs="12">
+                            <MudAlert Severity="Severity.Error" ContentAlignment="HorizontalAlignment.Center">        
+                                @Resources.InformationMessages.UsernameOrPasswordIsIncorrect                                    
+                            </MudAlert>      
+                        </MudItem>
+                    }
+
+                    @if(ShowProgress)
+                    {
+                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7"/>
+                    }
+
+                    <MudItem xs="12">
+                        <MrsTextField @bind-Value="Model.Username"
+                                      Label="@($"{Resources.DataDictionary.Username}")"
+                                      MaxLength="@(Models.Constant.Length.USERNAME)"
+                                      For="@(() => Model.Username)"
+                                      Required="true"                                      
+                                      Margin="Margin.Dense"
+                                      >
+                        </MrsTextField>                        
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MrsTextField @bind-Value="Model.Password"
+                                      Label="@($"{Resources.DataDictionary.Password}")"
+                                      MaxLength="@(Models.Constant.Length.PASSWORD)"
+                                      InputType="@(PasswordInput)"
+                                      Adornment="Adornment.End"
+                                      AdornmentIcon="@(PasswordInputIcon)"
+                                      OnAdornmentClick="@(() => TogglePasswordVisibility())"
+                                      Class="mt-4"
+                                      For="@(() => Model.Password)"
+                                      Required="true"                                      
+                                      Margin="Margin.Dense"
+                                      >
+                        </MrsTextField>                        
+                    </MudItem>
+
+                </MrsGrid>
+            </MrsCardContent>
+
+            <MudCardActions>
+                <MudGrid>
+                    <MudItem xs  = "12">
+                        <MrsButton ButtonType="ButtonType.Submit" StartIcon="@(Icons.Filled.Login)" Color ="@(Color.Primary)" FullWidth="true">
+                            @Resources.DataDictionary.Login
+                        </MrsButton>
+                    </MudItem>
+                </MudGrid>
+            </MudCardActions>
+
+        </MrsCard>
+
+    </EditForm>
+</MrsContainer>
+@code {
+    #region Constructor ================================================================================================
+
+
+    #endregion =========================================================================================================
+
+    #region Properties =================================================================================================
+
+    public ViewModels.UserDto Model { get; set; } = 
+        new ViewModels.UserDto();
+
+    [Parameter] public EditFormType Type { get; set; }
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+
+    bool PasswordVisibility;
+    InputType PasswordInput = InputType.Password;
+    string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+
+    private bool ShowAlert = false;
+    private bool InvalidSubmit = false;
+    private bool ShowProgress = false;
+
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+    private async Task HandleValidSubmit()
+    {
+        ShowAlert = false;
+        ShowProgress = true;
+
+
+        var result =
+            await authService.PostAsync(Model);
+       
+        if(result != null)
+        {
+            ShowAlert = false;
+
+            await localStorageService.SetItemAsync(key: "token", data: result);
+            await authenticationStateProvider.GetAuthenticationStateAsync();
+
+            ShowProgress = false;
+
+            navigationManager.NavigateTo(Resources.LinkCaptions.Index, forceLoad: false);            
+        }
+        else
+        {
+            ShowProgress = false;
+            ShowAlert = true;
+        }
+    }
+
+    protected void HandleInvalidSubmit()
+    
+    {
+
+    }
+
+	void TogglePasswordVisibility()
+	{
+		@if (PasswordVisibility)
+		{
+			PasswordVisibility = false;
+			PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+			PasswordInput = InputType.Password;
+		}
+		else
+		{
+			PasswordVisibility = true;
+			PasswordInputIcon = Icons.Material.Filled.Visibility;
+			PasswordInput = InputType.Text;
+		}
+	}
+
+    #endregion =========================================================================================================	
+}

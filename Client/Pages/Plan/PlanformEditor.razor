@@ -1,0 +1,136 @@
+﻿@inject NavigationManager navigationManager
+@inject ISnackbar snackbar
+
+<PageTitle>@(Resources.DataDictionary.Plan)</PageTitle>
+
+<MrsContainer MaxWidth = "MaxWidth.Small">
+
+    <EditForm 
+        Model = "@(Model)" 
+        OnValidSubmit = "@(() => HandleValidSubmit())"
+        OnInvalidSubmit = "@(() => HandleInvalidSubmit())"
+    >
+        <DataAnnotationsValidator />
+
+
+        <MrsCard>
+
+            <MrsCardHeader>
+                <MudText Typo="Typo.subtitle2">@(Resources.DataDictionary.Plan)</MudText>
+            </MrsCardHeader>
+
+            <MrsCardContent>
+                <MrsGrid>
+
+                    <MudItem xs="12">
+                        <CompanySelect @bind-BindTo = "@(Model.Company)" CompanyCategories="Data.Tools.Enums.CompanyCategories.Part"/> 
+                    </MudItem>
+                    <br />
+                    <MudItem xs = "12">
+                        <YearSelect @bind-BindTo = "@(Model.Year)" />
+                    </MudItem>                            
+
+                    <MudItem xs="12">
+                        <MrsTextField @bind-Value = "@(PlanTitel)"
+                                        Label="@($"{Resources.DataDictionary.PlanTitle}")"
+                                        MaxLength="@(Models.Constant.Length.GENERAL_NAME)"
+                                        For="@(() => Model.Titel)"
+                                        Required="true"                                      
+                                        Margin="Margin.Dense"
+                                        Disabled = "false"                                        
+                                        >
+                        </MrsTextField>                                   
+                    </MudItem>
+
+                </MrsGrid>             
+            </MrsCardContent>
+
+            <MudCardActions>
+                <MudGrid>
+               
+                </MudGrid>
+            </MudCardActions>
+
+        </MrsCard>
+    
+        <br />
+
+        <MudItem xs ="12">
+            <MudPaper>
+                <MudGrid>
+                    <MudItem>
+                        @if(Type == EditFormType.Create)
+                        {
+                            <MrsButtonSubmit ButtonType ="ButtonType.Submit">@Resources.Buttoms.SaveAndContinue</MrsButtonSubmit>
+                        }
+                        else
+                        {
+                            <MrsButtonEdit ButtonType = "ButtonType.Submit">@Resources.Buttoms.EditAndContinue</MrsButtonEdit>
+                        }
+
+                    </MudItem>
+                </MudGrid>
+     
+            </MudPaper>
+        </MudItem>    
+
+    </EditForm>
+</MrsContainer>
+
+@{
+    
+
+    if(Model.Company != null)
+    {
+        //Titel.Clear();
+        //Titel.Append($"{Resources.DataDictionary.Plan} {Model.Company.Name} ");
+        PlanTitel = $"{Resources.DataDictionary.Plan} {Model.Company.Name} ";
+    }
+    else
+    {
+        PlanTitel = string.Empty;
+    }
+
+    if(Model.Year != null)
+    {
+        //Titel.Clear();
+        //Titel.Append($"{Resources.DataDictionary.Year}  {Model.Year.Name} ");
+        PlanTitel = PlanTitel + $"{Resources.DataDictionary.Year} {Model.Year.Name.ToString()}";
+    }
+    Model.Titel = PlanTitel;
+    //PlanTitel = Titel.ToString();
+    //PlanTitel = $"برنامه {(Model.Company == null ? string.Empty : Model.Company.Name)} سال {(Model.Year == null ? string.Empty : Model.Year.Name)}";
+}
+
+@code 
+{
+    #region Properties =================================================================================================
+
+    [Parameter] public ViewModels.PlanViewModel? Model { get; set; } 
+    [Parameter] public EditFormType Type { get; set; }
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+
+    public string PlanTitel { get; set; } = string.Empty;
+
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+    private void HandleValidSubmit()
+    {
+        OnValidSubmit.InvokeAsync(Model);
+    }
+
+    protected void HandleInvalidSubmit()
+    {
+        //snackbar.Add($"{Resources.InformationMessages.FillAll}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });       
+    }
+
+    protected void BackToIndex()
+    {
+        navigationManager.NavigateTo(Resources.LinkCaptions.Business_Index);
+    }
+
+    #endregion =========================================================================================================
+
+}

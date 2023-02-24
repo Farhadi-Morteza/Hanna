@@ -1,0 +1,92 @@
+﻿@inject NavigationManager navigationManager
+
+<PageTitle>@(Resources.DataDictionary.Company)</PageTitle>
+
+<MrsContainer MaxWidth="MaxWidth.ExtraSmall">
+    <EditForm Model="@(Model)" OnValidSubmit="@(() => HandleValidSubmit())" OnInvalidSubmit="@(() => HandleInvalidSubmit())">
+        <DataAnnotationsValidator />
+
+        <MrsCard>
+
+            <MrsCardHeader>
+                <MudText Typo="Typo.subtitle2">@($"{Resources.DataDictionary.Company}")</MudText>
+            </MrsCardHeader>
+
+            <MrsCardContent>
+                <MrsGrid>
+
+                    <MudItem xs="12">
+                        <CompanyCategorySelect  @bind-BindTo = "@(Model.CompanyCategory)" />
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <CompanySelect CompanyCategories="@(Data.Tools.Enums.CompanyCategories.All)"  @bind-BindTo = "@(Model.CompanyParent)" />
+                    </MudItem>
+ 
+                    <MudItem xs="12">
+                        <MrsTextField @bind-Value="Model.Name"
+                                      Label="@($"{Resources.DataDictionary.Name}")"
+                                      MaxLength="@(Models.Constant.Length.GENERAL_NAME)"
+                                      For="@(() => Model.Name)"
+                                      Required="true"                                      
+                                      Margin="Margin.Dense"
+                                      >
+                        </MrsTextField>                        
+                    </MudItem>
+
+                </MrsGrid>
+            </MrsCardContent>
+
+            <MudCardActions>
+                <MudGrid>
+                    <MudItem>
+                        @if (Type == EditFormType.Create)
+                        {
+                            <MrsButtonSubmit ButtonType="ButtonType.Submit" />
+                        }
+                        else
+                        {
+                            <MrsButtonEdit ButtonType="ButtonType.Submit" />
+                        }
+                        </MudItem>
+                        <MudItem>
+                            <MrsButtonReturn ButtonType="ButtonType.Button" OnClick="@(() => BackToIndex())" />
+                        </MudItem>
+                </MudGrid>
+            </MudCardActions>
+
+        </MrsCard>
+
+    </EditForm>
+</MrsContainer>
+
+
+@code {
+    #region Properties =================================================================================================
+
+    [Parameter] public ViewModels.CompanyViewModel? Model { get; set; } 
+    [Parameter] public EditFormType Type { get; set; }
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+    private void HandleValidSubmit()
+    {
+        OnValidSubmit.InvokeAsync(Model);
+    }
+
+    protected void HandleInvalidSubmit()
+    {
+        //Message = "Failed to submit form";
+    }
+
+    protected void BackToIndex()
+    {
+        navigationManager.NavigateTo(Resources.LinkCaptions.Companies_Index);
+    }
+
+    #endregion =========================================================================================================
+
+}

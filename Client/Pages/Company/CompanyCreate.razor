@@ -1,0 +1,37 @@
+﻿@page "/Company/Create"
+@inject NavigationManager navigationManager
+@inject CompanyService companyService
+@inject ISnackbar snackbar
+
+<PageTitle>@(Resources.DataDictionary.Company)</PageTitle>
+
+<CompanyFormEditor Model = "@(Model)" OnValidSubmit = "@(() => Submit())" Type = "@(EditFormType.Create)" />
+
+@code {
+    #region Properties =================================================================================================
+
+    public ViewModels.CompanyViewModel Model { get; set; } = new ViewModels.CompanyViewModel();
+
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+    private async Task Submit()
+    {
+        var result = 
+            await companyService.PostAsync(Model);
+        
+        if(result != null)
+        {
+            snackbar.Add($"{Resources.InformationMessages.SaveSuccess}", Severity.Success, config => { config.Icon = Icons.Filled.Save; });
+            navigationManager.NavigateTo(uri: Resources.LinkCaptions.Companies_Index, forceLoad: false);
+        }
+        else
+            snackbar.Add($"{Resources.InformationMessages.SaveFail}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });
+
+        
+
+    }
+    #endregion =========================================================================================================
+
+}

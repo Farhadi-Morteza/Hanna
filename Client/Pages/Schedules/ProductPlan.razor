@@ -1,0 +1,107 @@
+﻿@page "/ProductPlan"
+@inject NavigationManager navigationManager
+
+<PageTitle>@(Resources.DataDictionary.PlanBaseForm)</PageTitle>
+
+
+<MrsContainer MaxWidth="MaxWidth.Medium">
+    <PlanBaseForm PlanLevel ="@(PlanLevel.ProductPlan)">
+        
+        <MrsCard>
+
+            <MrsCardHeader>
+                <MudText Typo="Typo.subtitle2">@($"{Resources.DataDictionary.Activity}")</MudText>
+            </MrsCardHeader>
+
+            <MrsCardContent>
+                <MrsGrid>
+
+                    <MudItem xs="12">
+                        <ProductSelect />
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MrsTextField T = "string"
+                                        Label="@($" میزان پیش بینی تولید/تامین سال 1401 (تن)")"
+                                        MaxLength="@(Models.Constant.Length.GENERAL_NAME)"              
+                                        Required="true"                                      
+                                        Margin="Margin.Dense"
+                                        >
+                        </MrsTextField>                        
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MrsTextField T = "string"
+                                        Label="@($"میزان پیش بینی فروش سال 1401 (تن)")"
+                                        MaxLength="@(Models.Constant.Length.GENERAL_NAME)"              
+                                        Required="true"                                      
+                                        Margin="Margin.Dense"
+                                        >
+                        </MrsTextField>                        
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MrsTextField T = "string"
+                                        Label="@($"فی فروش بازای هر واحد محصول سال 1401 (ریال)")"
+                                        MaxLength="@(Models.Constant.Length.GENERAL_NAME)"              
+                                        Required="true"                                      
+                                        Margin="Margin.Dense"
+                                        >
+                        </MrsTextField>                        
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MrsTextField T = "string"
+                                        Label="@($"میزان پیش بینی در آمد سال 1401 (ریال)")"
+                                        MaxLength="@(Models.Constant.Length.GENERAL_NAME)"              
+                                        Required="true"                                      
+                                        Margin="Margin.Dense"
+                                        >
+                        </MrsTextField>                        
+                    </MudItem>
+                    
+                        <MudItem xs="12">
+                            <MudNumericField @bind-Value="doubleValue" Label="Enter a double"  Variant="Variant.Outlined" />                           
+                        </MudItem>                    
+                </MrsGrid>
+            </MrsCardContent>
+
+            <MudCardActions>
+                <MudGrid>
+
+                </MudGrid>
+            </MudCardActions>
+
+        </MrsCard>
+
+    </PlanBaseForm>
+
+    <br />
+
+    <MudItem xs ="12">
+        <MudPaper>
+            <MudGrid>
+                <MudItem>
+                    <MudButton Color="@Color.Success" Variant= "Variant.Filled" OnClick ="@SaveAndCountinu">Save & Countinu</MudButton>
+                </MudItem>
+                <MudItem>
+                    <MudButton Color="@Color.Secondary" Variant= "Variant.Filled" OnClick ="@Back">Back</MudButton>            
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudItem>
+
+</MrsContainer>
+
+@code {
+     double doubleValue;
+
+    private void SaveAndCountinu()
+    {
+        navigationManager.NavigateTo(uri: "/CheckoutPlan", forceLoad: false);
+    }
+    private void Back()
+    {
+        navigationManager.NavigateTo(uri: "/ActivityPlan", forceLoad: false);
+    }
+}

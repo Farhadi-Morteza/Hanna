@@ -1,0 +1,33 @@
+﻿@page "/CheckoutPlan"
+@attribute [Authorize(Roles = "Admin")]
+
+@inject PlanService planService
+
+    <MudItem xs="11" Style="text-align:center">
+		<PlanList Plans = "@(Models)"></PlanList>
+    </MudItem>
+
+@code {
+    #region Constructor ================================================================================================
+
+    protected async override Task OnInitializedAsync()
+    {
+        Models =
+            await planService.GetAsync(query: Resources.ActionRoute.CheckoutPlan);
+    }
+
+    #endregion =========================================================================================================
+
+    #region Properties =================================================================================================
+
+    public IList<ViewModels.PlanViewModel>? Models { get; set; } 
+
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+
+
+    #endregion =========================================================================================================
+
+}

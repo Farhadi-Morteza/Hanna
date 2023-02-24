@@ -1,0 +1,132 @@
+﻿@page "/ActivityProduct/{Id}"
+@inject ActivityService activityService
+
+@inject NavigationManager navigationManager
+@inject IDialogService dialogService
+@inject ISnackbar snackbar
+
+<PageTitle>@(Resources.DataDictionary.ActivityProduct)</PageTitle>
+
+<MrsContainer MaxWidth= "MaxWidth.ExtraSmall">
+    <MrsCard>
+        <MrsCardHeader>
+
+        </MrsCardHeader>
+
+        <MrsCardContent>
+            <MudItem>
+                <ProductSelect @bind-BindTo = "@(Product)" />
+            </MudItem>
+            <MudItem>
+                <MrsButtonSubmit ButtonType = "ButtonType.Button" FullWidth = "true" OnClick = "@(() => Save())"></MrsButtonSubmit>
+            </MudItem>
+
+            <MrsTable 
+                Items = "@(Model.Products)" 
+                Dense = "true" 
+                ShowPagerContent = "false" 
+            >
+                
+                <HeaderContent>
+                    <MudTh>@(Resources.DataDictionary.Product)</MudTh>
+                    <MudTh></MudTh>
+                </HeaderContent>
+
+                <RowTemplate>
+                    <MudTd DataLabel="@(Resources.DataDictionary.Name)">@context.Name</MudTd>
+                    <MudTd Style="text-align:end">
+                        <MudIconButton OnClick="() => Delete(context)" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Class="m-2" Color="Color.Error"></MudIconButton>
+                    </MudTd>
+                </RowTemplate>
+
+            </MrsTable>
+        </MrsCardContent>
+    </MrsCard>
+
+</MrsContainer>
+
+@code 
+{
+
+    #region Constructor ================================================================================================
+
+    protected async override Task OnInitializedAsync()
+    {
+        if(string.IsNullOrEmpty(Id) == false)
+        {
+            Model =
+                await activityService.GetAsync(query: Id);
+        }
+    }
+
+    #endregion =========================================================================================================
+
+    #region Properties =================================================================================================
+
+    public ViewModels.ActivityViewModel Model { get; set; } = 
+        new ViewModels.ActivityViewModel();
+
+    [Parameter] 
+    public string Id { get; set; } = string.Empty;
+
+    public ViewModels.ProductViewModel Product { get; set; } = 
+        new ViewModels.ProductViewModel();
+
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+    private async Task Save()
+    {
+        ViewModels.ActivityProductViewModel add =
+            new ViewModels.ActivityProductViewModel()
+                {
+                    ActivityId = Model.Id,
+                    ProductId = Product.Id
+                };
+
+        var Result = await activityService.PostActivityProductAsync(add);
+
+        if(Result != null)
+        {
+            Model.Products.Add(Result.Products[0]);
+            snackbar.Add($"{Resources.InformationMessages.SaveSuccess}", Severity.Success, config => { config.Icon = Icons.Filled.Save; });            
+        }
+        else
+        {
+            snackbar.Add($"{ Resources.InformationMessages.EditFail}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });    
+        }                          
+    }
+
+    private async Task Delete(Models.Product prd)
+    {
+        var dialog = dialogService.Show<MrsDialogDelete>();
+        var result = await dialog.Result;
+
+        if (result.Cancelled == false)
+        {
+            ViewModels.ActivityProductViewModel Del =
+                new ViewModels.ActivityProductViewModel()
+                    {
+                        ActivityId = Model.Id,
+                        ProductId = prd.Id
+                    };
+
+            var activityDeleted = 
+                await activityService.DeleteActivityProductAsync(Del);
+
+            if (activityDeleted != null)
+            {
+                Model.Products.Remove(activityDeleted.Products[0]);               
+                snackbar.Add($"{Resources.InformationMessages.DeleteSuccess}", Severity.Success, config => { config.Icon = Icons.Filled.Delete; });                
+            }
+            else
+            {
+                snackbar.Add($"{Resources.InformationMessages.DeleteFail}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });
+            }
+        }       
+     }
+
+    #endregion =========================================================================================================   
+
+}

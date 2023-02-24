@@ -1,0 +1,173 @@
+﻿@page "/Plan"
+@inject PlanService planService
+
+@inject NavigationManager navigationManager
+@inject ISnackbar snackbar
+
+<PageTitle>@(Resources.DataDictionary.Plan)</PageTitle>
+
+<MrsContainer MaxWidth="MaxWidth.Medium">
+    <EditForm Model = "@(planService.Myplan)" OnValidSubmit="@(() => HandleValidSubmit() )" OnInvalidSubmit="@(() => HandleInvalidSubmit())">
+        <DataAnnotationsValidator />
+
+
+
+        <PlanBaseForm PlanLevel ="@(PlanLevel.Plan)">
+        
+            <MrsCard>
+
+                <MrsCardHeader>
+                    <MudText Typo="Typo.subtitle2">@($"{Resources.DataDictionary.Plan}")</MudText>
+                </MrsCardHeader>
+
+                <MrsCardContent>
+                    <MrsContainer MaxWidth = "MaxWidth.Small">
+                        <MrsGrid>
+
+                            <MudItem xs="12">
+                                <CompanySelect @bind-BindTo = "planService.Myplan.Company" />  @*="@(Model.Company)" />*@
+                            </MudItem>
+                            <br />
+                            <MudItem xs = "12">
+                                <YearSelect @bind-BindTo = "planService.Myplan.Year" /> @*="@(Model.Year)" />*@
+                            </MudItem>
+
+                            
+
+                            <MudItem xs="12">
+                                <MrsTextField @bind-Value = "@(PlanTitel)"
+                                              Label="@($"{Resources.DataDictionary.Activity}")"
+                                              MaxLength="@(Models.Constant.Length.GENERAL_NAME)"
+                                              For="@(() => planService.Myplan.Titel)"
+                                              Required="true"                                      
+                                              Margin="Margin.Dense"
+                                              Disabled = "true"
+                                              >
+                                </MrsTextField>                          
+                            </MudItem>
+
+                        </MrsGrid>
+                    </MrsContainer>              
+                </MrsCardContent>
+
+                <MudCardActions>
+                    <MudGrid>
+               
+                    </MudGrid>
+                </MudCardActions>
+
+            </MrsCard>
+
+        </PlanBaseForm>
+
+        <br />
+
+        <MudItem xs ="12">
+            <MudPaper>
+                <MudGrid>
+                    <MudItem>
+                        @if(planService.Myplan.Id == Guid.Empty)
+                        {
+                            <MrsButtonSubmit ButtonType ="ButtonType.Submit">@Resources.Buttoms.SaveAndContinue</MrsButtonSubmit>
+                        }
+                        else
+                        {
+                            <MrsButtonEdit ButtonType = "ButtonType.Submit">@Resources.Buttoms.EditAndContinue</MrsButtonEdit>
+@*                            <MrsButton 
+                                ButtonType = "ButtonType.Button" 
+                                StartIcon = "@Icons.Filled.NavigateNext" 
+                                Link = "@(Resources.LinkCaptions.ActivityPlan_Create)"
+                            >@Resources.Buttoms.Next</MrsButton>*@
+                        }
+
+                    </MudItem>
+                </MudGrid>
+     
+            </MudPaper>
+        </MudItem>
+
+    </EditForm>
+
+</MrsContainer>
+
+@{
+
+    if(planService.Myplan.Company != null)
+    {
+        //Titel.Clear();
+        //Titel.Append($"{Resources.DataDictionary.Plan} {Model.Company.Name} ");
+        PlanTitel = $"{Resources.DataDictionary.Plan} {planService.Myplan.Company.Name} ";
+    }
+    else
+    {
+        PlanTitel = string.Empty;
+    }
+
+    if(planService.Myplan.Year != null)
+    {
+        //Titel.Clear();
+        //Titel.Append($"{Resources.DataDictionary.Year}  {Model.Year.Name} ");
+        PlanTitel = PlanTitel + $"{Resources.DataDictionary.Year} {planService.Myplan.Year.Name.ToString()}";
+    }
+    planService.Myplan.Titel = PlanTitel;
+    //PlanTitel = Titel.ToString();
+    //PlanTitel = $"برنامه {(Model.Company == null ? string.Empty : Model.Company.Name)} سال {(Model.Year == null ? string.Empty : Model.Year.Name)}";
+}
+
+
+@code {
+    #region Properties =================================================================================================
+
+
+    [Parameter] public EditFormType Type { get; set; }
+
+    public string PlanTitel { get; set; } = string.Empty;
+    public System.Text.StringBuilder Titel { get; set; } = new System.Text.StringBuilder();
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+    private async void HandleValidSubmit()
+    {
+        ViewModels.PlanViewModel result =
+            new ViewModels.PlanViewModel();
+
+        if(planService.Myplan.Id == Guid.Empty)
+        {
+            result =
+               await planService.PostAsync(planService.Myplan);            
+        }
+        else
+        {
+            result =
+                await planService.PutAsync(planService.Myplan);
+        }
+
+
+        planService.Myplan.Id = result.Id;
+
+        if(result != null)
+        {
+           
+            snackbar.Add($"{Resources.InformationMessages.SaveSuccess}", Severity.Success, config => { config.Icon = Icons.Filled.Save; });
+            navigationManager.NavigateTo(uri: Resources.LinkCaptions.ActivityPlan_Create, forceLoad: false);
+        }
+        else
+            snackbar.Add($"{Resources.InformationMessages.SaveFail}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });       
+
+        
+    }
+
+    protected void HandleInvalidSubmit()
+    {
+         snackbar.Add($"{Resources.InformationMessages.FillAll}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });       
+    }
+
+    protected void BackToIndex()
+    {
+        navigationManager.NavigateTo(Resources.LinkCaptions.Products_Index);        
+    }
+
+    #endregion =========================================================================================================
+
+}

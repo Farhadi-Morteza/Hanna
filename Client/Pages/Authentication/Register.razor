@@ -1,0 +1,107 @@
+﻿@page "/Register"
+@layout LoginLayout
+
+@inject AuthService authService
+@inject NavigationManager navigationManager
+@inject ISnackbar snackbar
+
+<PageTitle>@(Resources.DataDictionary.Register)</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">@(Resources.DataDictionary.SignUp)</MudText>
+<EditForm Model="@(User)"
+		  OnValidSubmit="@(() => HandleValidSubmit())"
+		  OnInvalidSubmit="@(() => HandleInvalidSubmit())">
+
+	<DataAnnotationsValidator />
+
+
+	<MudText>
+		@(Resources.DataDictionary.Alreadyhaveanaccount)
+		<MudLink Href="@($"{Resources.LinkCaptions.Login}")">
+			@(Resources.DataDictionary.SignIn)
+		</MudLink>
+	</MudText>
+
+	<MrsTextField T="string"
+				  @bind-Value="@(User.FullName)"
+				  Label="@(Resources.DataDictionary.FullName)"
+				  For="@(() => User.FullName)"
+				  Required="true">
+	</MrsTextField>
+
+	<MrsTextField @bind-Value="@(User.Username)"
+				  Label="@(Resources.DataDictionary.Username)"
+				  Class="my-4"
+				  For="@(() => User.Username)"
+				  Required="true">
+	</MrsTextField>
+
+	<MrsTextField @bind-Value="@(User.Password)"
+				  Label="@(Resources.DataDictionary.Password)"
+				  InputType="@(PasswordInput)"
+				  Adornment="Adornment.End"
+				  AdornmentIcon="@(PasswordInputIcon)"
+				  OnAdornmentClick="@(() => TogglePasswordVisibility())"
+				  Class="mt-4">
+	</MrsTextField>
+
+	<CompanySelect CompanyCategories="@(Data.Tools.Enums.CompanyCategories.All)" @bind-BindTo="@(User.Company)" MarginMrs="Margin.Normal"></CompanySelect>
+
+	<MudCheckBox Checked="false" Label="Admin" Class="ml-n1 my-3"></MudCheckBox>
+	<MudCheckBox Checked="true" Label="User" Class="ml-n1 my-3"></MudCheckBox>
+
+	<MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true">Register</MudButton>
+
+</EditForm>
+
+
+@code
+{
+	public ViewModels.UserViewModel User { get; set; }
+			= new ViewModels.UserViewModel();
+
+	bool PasswordVisibility;
+	InputType PasswordInput = InputType.Password;
+	string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+
+	void TogglePasswordVisibility()
+	{
+		@if (PasswordVisibility)
+		{
+			PasswordVisibility = false;
+			PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+			PasswordInput = InputType.Password;
+		}
+		else
+		{
+			PasswordVisibility = true;
+			PasswordInputIcon = Icons.Material.Filled.Visibility;
+			PasswordInput = InputType.Text;
+		}
+	}
+
+
+	#region Method =====================================================================================================
+
+	private async void HandleValidSubmit()
+	{
+		//string[] role = {"Admin" };
+		//User.Roles = role;
+		var result =
+				await authService.PostAsync(User);
+
+		if (result != null)
+		{
+			snackbar.Add($"{Resources.InformationMessages.SaveSuccess}", Severity.Success, config => { config.Icon = Icons.Filled.Save; });
+			navigationManager.NavigateTo(uri: Resources.LinkCaptions.Login, forceLoad: false);
+		}
+		else
+			snackbar.Add($"{Resources.InformationMessages.SaveFail}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });
+	}
+
+	protected void HandleInvalidSubmit()
+	{
+
+	}
+	#endregion =========================================================================================================
+}

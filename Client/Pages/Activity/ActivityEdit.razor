@@ -1,0 +1,60 @@
+﻿@page "/Activity/Edit/{Id}"
+@inject ActivityService activityService
+
+@inject NavigationManager navigationManager
+@inject IDialogService dialogService
+@inject ISnackbar snackbar
+
+<PageTitle>@($"{Resources.DataDictionary.Activity} {Resources.DataDictionary.Edit}")</PageTitle>
+
+<ActivityFormEditor Model="@(Model)" OnValidSubmit="@(() => Submit())" Type="EditFormType.Edit" />
+
+@code {
+
+    #region Constructor ================================================================================================
+
+    protected async override Task OnInitializedAsync()
+    {
+        if(string.IsNullOrEmpty(Id) == false)
+        {
+            Model =
+                await activityService.GetAsync(query: Id);
+        }
+    }
+
+    #endregion =========================================================================================================
+
+    #region Properties =================================================================================================
+
+    public ViewModels.ActivityViewModel Model { get; set; } = new ViewModels.ActivityViewModel();
+
+    [Parameter] public string Id { get; set; } = string.Empty;
+
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+    private async Task Submit()
+    {
+        var dialog = dialogService.Show<MrsDialogEdit>();
+        var result = await dialog.Result;
+
+        if (result.Cancelled == false)
+        {                 
+            var Result = await activityService.PutAsync(Model);
+
+            if(Result != null)
+            {
+                snackbar.Add($"{Resources.InformationMessages.EditSuccsess}", Severity.Success, config => { config.Icon = Icons.Filled.Edit; });
+                navigationManager.NavigateTo(uri: Resources.LinkCaptions.Activities_Index, forceLoad: false);
+            }
+            else
+            {
+                snackbar.Add($"{ Resources.InformationMessages.EditFail}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });    
+            }                          
+        }
+    }
+
+    #endregion =========================================================================================================   
+
+}

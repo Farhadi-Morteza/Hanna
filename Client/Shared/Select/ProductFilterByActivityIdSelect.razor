@@ -1,0 +1,72 @@
+﻿@namespace MrsComponent
+@inject ProductService productService
+
+<MudAutocomplete T="ViewModels.ProductSelectViewModel"
+                    Label = "@(Resources.DataDictionary.Product)"
+                    SearchFunc = "@(Search)"
+                    ResetValueOnEmptyText = "true"
+                    ToStringFunc="@(e => e == null ? null : $"{e.Name} - {e.ProductTypeSelectViewModel.Name}({e.ProductIndicatorSelectViewModel.Name}/{e.MetricSelectViewModel.Name})")"
+                    @bind-Value = "@BindTo"
+                    Variant = "Variant.Outlined"
+                    Clearable="true"
+                    Immediate="true"
+                    Margin="Margin.Dense"
+                    Required="true"
+                    CoerceValue="true"
+                />
+
+@code {
+	//protected async override Task OnInitializedAsync()
+	//{
+	//	SelectList =
+	//		await productService.GetSelectByActivityIdAsync(activityId: ActivityId);
+	//}
+
+	protected async override Task OnAfterRenderAsync(bool firstRender)
+	{
+		if(SelectList == null && ActivityId != Guid.Empty.ToString())
+		{
+			SelectList =
+				await productService.GetSelectByActivityIdAsync(activityId: ActivityId);
+		}
+
+		//return base.OnAfterRenderAsync(firstRender);
+	}
+
+	private IList<ViewModels.ProductSelectViewModel> SelectList{ get; set; }
+
+	private async Task<IEnumerable<ViewModels.ProductSelectViewModel>> Search(string value)
+	{
+		await Task.Delay(1);
+
+		if (string.IsNullOrEmpty(value))
+		{
+			return SelectList;
+		}
+
+		var data = SelectList;
+
+		return data.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+	}
+
+	private ViewModels.ProductSelectViewModel bindingValue =
+		new ViewModels.ProductSelectViewModel();
+
+	[Parameter]
+	public string ActivityId { get; set; } = string.Empty;
+
+	[Parameter]
+	public ViewModels.ProductSelectViewModel BindTo
+	{
+		get => bindingValue;
+		set
+		{
+			if (bindingValue == value) return;
+			bindingValue = value;
+			BindToChanged.InvokeAsync(value);
+		}
+	}
+
+	[Parameter]
+	public EventCallback<ViewModels.ProductSelectViewModel> BindToChanged{ get; set; }
+}

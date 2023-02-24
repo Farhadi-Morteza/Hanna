@@ -1,0 +1,67 @@
+﻿@namespace MrsComponent
+@inherits MudAutocomplete<T>
+@typeparam T
+
+
+<MudAutocomplete T="T"
+                 SearchFunc="@SearchFunc"
+                 ResetValueOnEmptyText="@ResetValueOnEmptyText"
+                 MaxItems="@MaxItems"
+                 ToStringFunc="@ToStringFunc"
+                 Variant="Variant.Outlined"
+                 Label="@Label"
+                 Dense="true"
+                 Clearable="true"
+                 Margin="Margin.Dense"
+                 Required="@true"
+                 CoerceValue="true"
+                 Immediate="true"             
+                 @bind-Value="@BindTo"
+                 
+                 
+                 >
+
+</MudAutocomplete>
+
+
+@code {
+        //[Parameter] public Func<string, Task<IEnumerable<T>>> SearchFunc { get; set; }
+        //[Parameter] public bool ResetValueOnEmptyText { get; set; } = false;
+        //[Parameter] public int? MaxItems { get; set; } = 10;
+        //[Parameter] public bool IsRequired { get; set; } = true;
+
+
+    private T bindingValue;
+
+    [Parameter]
+    public T BindTo
+    {
+        get => bindingValue;
+        set
+        {
+            if (bindingValue is not null) return;
+            bindingValue = value;
+            BindToChanged.InvokeAsync(value);
+        }
+    }
+
+    [Parameter] public EventCallback<T> BindToChanged { get; set; }
+
+    private Func<T, string> _toStringFunc;
+
+    [Parameter]
+    public Func<T, string> ToStringFunc
+    {
+        get => _toStringFunc;
+        set
+        {
+            if (_toStringFunc == value)
+                return;
+            _toStringFunc = value;
+            Converter = new Converter<T>
+            {
+                SetFunc = _toStringFunc ?? (x => x?.ToString()),
+            };
+        }
+    }
+}

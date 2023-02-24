@@ -1,0 +1,28 @@
+﻿@namespace MrsComponent
+
+<MudCard Elevation="@Elevation" Square="@Square" Outlined="@Outlined" >
+    @ChildContent
+</MudCard>
+
+@code {
+    /// <summary>
+    /// The higher the number, the heavier the drop-shadow. 0 for no shadow.
+    /// </summary>
+    [Parameter] public int Elevation { set; get; } = 25;
+
+    /// <summary>
+    /// If true, border-radius is set to 0.
+    /// </summary>
+    [Parameter] public bool Square { get; set; }
+
+    /// <summary>
+    /// If true, card will be outlined.
+    /// </summary>
+    [Parameter] public bool Outlined { get; set; } = false;
+
+    /// <summary>
+    /// Child content of the component.
+    /// </summary>
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+}

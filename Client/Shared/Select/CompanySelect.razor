@@ -1,0 +1,102 @@
+﻿@namespace MrsComponent
+@inject CompanyService companyService
+
+<MudAutocomplete T ="ViewModels.CompanySelectViewModel"
+	Label = "@(Label)"
+	SearchFunc = "@(Search)"
+	ResetValueOnEmptyText = "true"
+	ToStringFunc="(e => e==null? null : e.Name)"
+	@bind-Value = "@BindTo"
+	Variant = "Variant.Outlined"
+	Clearable = "true"
+	Immediate = "true"
+	Margin ="@(MarginMrs)"
+	Required = "true"
+	CoerceValue = "true"	
+/>
+
+@code {
+	protected async override Task OnInitializedAsync()
+	{
+		SelectList =
+			await companyService.GetSelectAsync(CompanyCategories);//.GetSelectAsync();
+
+		switch(CompanyCategories)
+		{
+			case Data.Tools.Enums.CompanyCategories.All :
+				Label = Data.Constant.CompanyCategories.Holding;
+				break;
+
+			case Data.Tools.Enums.CompanyCategories.Holding :
+				Label = Data.Constant.CompanyCategories.Holding;
+				break;
+
+			case Data.Tools.Enums.CompanyCategories.Company :
+				Label = Data.Constant.CompanyCategories.Company;
+				break;
+
+			case Data.Tools.Enums.CompanyCategories.Collection :
+				Label = Data.Constant.CompanyCategories.Collection;
+				break;
+
+			case Data.Tools.Enums.CompanyCategories.Subcollection :
+				Label = Data.Constant.CompanyCategories.Subcollection;
+				break;
+
+			case Data.Tools.Enums.CompanyCategories.Part :
+				Label = Data.Constant.CompanyCategories.Part;
+				break;
+			
+			default:
+				Label = Data.Constant.CompanyCategories.Holding;
+				break;
+		}
+	
+		
+	}
+
+	[Parameter]
+	public MudBlazor.Margin MarginMrs { get; set; } = Margin.Dense;
+
+	[Parameter]
+	public Data.Tools.Enums.CompanyCategories CompanyCategories { get; set; } 
+		= Data.Tools.Enums.CompanyCategories.All;
+
+	private string Label = string.Empty;
+
+
+	private IList<ViewModels.CompanySelectViewModel> SelectList{ get; set; }
+
+	private async Task<IEnumerable<ViewModels.CompanySelectViewModel>> Search(string value)
+	{
+		await Task.Delay(1);
+
+		if (string.IsNullOrEmpty(value))
+		{
+			return SelectList;
+		}
+
+		var data = SelectList;
+
+		return data.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+	}
+
+	private ViewModels.CompanySelectViewModel bindingValue =
+		new ViewModels.CompanySelectViewModel();
+
+	[Parameter]
+	public ViewModels.CompanySelectViewModel BindTo
+	{
+		get => bindingValue;
+		set
+		{
+			if (bindingValue == value) return;
+			bindingValue = value;
+			BindToChanged.InvokeAsync(value);
+		}
+	}
+
+	[Parameter]
+	public EventCallback<ViewModels.CompanySelectViewModel> BindToChanged{ get; set; }
+
+}

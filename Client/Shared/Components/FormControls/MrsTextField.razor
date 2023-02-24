@@ -1,0 +1,126 @@
+﻿@namespace MrsComponent
+@using MudBlazor.Utilities;
+@typeparam T
+@inherits MudDebouncedInput<T>
+
+<CascadingValue Name="Standalone"
+                Value="true"
+                IsFixed="true">
+    <MudInputControl 
+                     Label="@Label"
+                     Variant="@VariantMrs"
+                     HelperText="@HelperText"
+                     HelperTextOnFocus="@HelperTextOnFocus"
+                     CounterText="@GetCounterText()"
+                     FullWidth="@FullWidth"
+                     Class="@Classname"
+                     Error="@HasErrors"
+                     ErrorText="@GetErrorText()"
+                     Disabled="@Disabled"
+                     Margin="@Margin.Dense"
+                     Required="@Required">
+        <InputContent>
+            <MudInput T="string"
+                      @ref="_elementReference"
+                      @attributes="UserAttributes"
+                      InputType="@InputType"
+                      Lines="@Lines"
+                      Style="@Style"
+                      Variant="@VariantMrs"
+                      TextUpdateSuppression="@TextUpdateSuppression"
+                      Value="@Text"
+                      ValueChanged="(s) => SetTextAsync(s)"
+                      Placeholder="@Placeholder"
+                      Disabled=@Disabled
+                      DisableUnderLine="@DisableUnderLine"
+                      ReadOnly="@ReadOnly"
+                      MaxLength="@MaxLength"
+                      Adornment="@Adornment"
+                      AdornmentText="@AdornmentText"
+                      AdornmentIcon="@AdornmentIcon"
+                      AdornmentColor="@AdornmentColor"
+                      IconSize="@IconSize"
+                      OnAdornmentClick="@OnAdornmentClick"
+                      Error="@Error"
+                      Immediate="@Immediate"
+                      Margin="@Margin"
+                      OnBlur="@OnBlurred"
+                      OnKeyDown="@InvokeKeyDown"
+                      OnInternalInputChanged="OnChange"
+                      OnKeyPress="@InvokeKeyPress"
+                      OnKeyUp="@InvokeKeyUp"
+                      KeyDownPreventDefault="KeyDownPreventDefault"
+                      KeyPressPreventDefault="KeyPressPreventDefault"
+                      KeyUpPreventDefault="KeyUpPreventDefault"
+                      HideSpinButtons="true"
+                      Clearable="true"
+                      OnClearButtonClick="@OnClearButtonClick"
+                      Pattern="@Pattern" />
+        </InputContent>
+    </MudInputControl>
+</CascadingValue>
+
+@code {
+    protected string Classname =>
+                         new CssBuilder("mud-input-input-control")
+                         .AddClass(Class)
+                         .Build();
+
+    private MudInput<string> _elementReference;
+
+    [Parameter] public Variant VariantMrs { get; set; } = Variant.Outlined;
+
+
+    /// <summary>
+    /// Type of the input element. It should be a valid HTML5 input type.
+    /// </summary>
+    [Parameter] public InputType InputType { get; set; } = InputType.Text;
+
+    //internal override InputType GetInputType() => InputType;
+
+    private string GetCounterText() => Counter == null ? string.Empty : (Counter == 0 ? (string.IsNullOrEmpty(Text) ? "0" : $"{Text.Length}") : ((string.IsNullOrEmpty(Text) ? "0" : $"{Text.Length}") + $" / {Counter}"));
+
+    /// <summary>
+    /// Show clear button.
+    /// </summary>
+    [Parameter] public bool Clearable { get; set; } = true;
+
+    /// <summary>
+    /// Button click event for clear button. Called after text and value has been cleared.
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnClearButtonClick { get; set; }
+
+    public override ValueTask FocusAsync()
+    {
+        return _elementReference.FocusAsync();
+    }
+
+    public override ValueTask SelectAsync()
+    {
+        return _elementReference.SelectAsync();
+    }
+
+    public override ValueTask SelectRangeAsync(int pos1, int pos2)
+    {
+        return _elementReference.SelectRangeAsync(pos1, pos2);
+    }
+
+    /// <summary>
+    /// Clear the text field, set Value to default(T) and Text to null
+    /// </summary>
+    /// <returns></returns>
+    public async Task Clear()
+    {
+        await _elementReference.SetText(null);
+    }
+
+    /// <summary>
+    /// Sets the input text from outside programmatically
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    public Task SetText(string text)
+    {
+        return _elementReference?.SetText(text);
+    }
+}

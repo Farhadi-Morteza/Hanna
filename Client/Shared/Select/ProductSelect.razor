@@ -1,0 +1,57 @@
+﻿@namespace MrsComponent
+@inject ProductService productService
+
+<MudAutocomplete T="ViewModels.ProductViewModel"
+                    Label = "@(Resources.DataDictionary.Product)"
+                    SearchFunc = "@(Search)"
+                    ResetValueOnEmptyText = "true"
+                    ToStringFunc="@(e => e==null? null : e.Name)"
+                    @bind-Value = "@BindTo"
+                    Variant = "Variant.Outlined"
+                    Clearable="true"
+                    Immediate="true"
+                    Margin="Margin.Dense"
+                    Required="true"
+                    CoerceValue="true"
+                />
+
+@code {
+    protected async override Task OnInitializedAsync()
+    {
+        SelectList =
+            await productService.GetSelectAsync();            
+    }
+
+    private IList<ViewModels.ProductViewModel> SelectList { get; set; }  
+
+    private async Task<IEnumerable<ViewModels.ProductViewModel>> Search(string value)
+    {
+        await Task.Delay(1);
+
+        if (string.IsNullOrEmpty(value))
+        {
+            return SelectList;
+        }
+
+        var data = SelectList;
+
+        return data.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    private ViewModels.ProductViewModel bindingValue = 
+        new ViewModels.ProductViewModel();
+
+    [Parameter]
+    public ViewModels.ProductViewModel BindTo
+    {
+        get => bindingValue;
+        set
+        {
+            if (bindingValue == value) return;
+            bindingValue = value;
+            BindToChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter] public EventCallback<ViewModels.ProductViewModel> BindToChanged { get; set; }
+
+}

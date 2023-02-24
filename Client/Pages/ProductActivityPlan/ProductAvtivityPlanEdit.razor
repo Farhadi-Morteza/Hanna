@@ -1,0 +1,65 @@
+﻿@page "/ProductActivityPlan/Edit/{Id}"
+@inject ProductActivityPlanService productActivityPlanService
+
+@inject NavigationManager navigationManager
+@inject IDialogService dialogService
+@inject ISnackbar snackbar
+
+<PageTitle>@($"{Resources.DataDictionary.ProductActivityPlanList} {Resources.DataDictionary.Edit}")</PageTitle>
+
+<ProductActivityPlanFormEdotor 
+    Model = "@(Model)" 
+    OnValidSubmit = "@(() => Submit())" 
+    Type = "@(EditFormType.Edit)"
+    >
+</ProductActivityPlanFormEdotor>
+
+@code {
+    #region Constructor ================================================================================================
+
+    protected async override Task OnInitializedAsync()
+    {
+        if(string.IsNullOrEmpty(Id) == false)
+        {
+            Model =
+                await productActivityPlanService.GetAsync(query: Id);
+        }
+    }
+
+    #endregion =========================================================================================================
+
+    #region Properties =================================================================================================
+
+    public ViewModels.ProductActivityPlanViewModel Model { get; set; } =
+        new ViewModels.ProductActivityPlanViewModel();
+
+    [Parameter] public string Id { get; set; } = string.Empty;
+
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+    private async Task Submit()
+    {
+        var dialog = dialogService.Show<MrsDialogEdit>();
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult.Cancelled == false)
+        {
+            var Result = await productActivityPlanService.PutAsync(Model);
+
+            if(Result != null)
+            {
+                snackbar.Add($"{Resources.InformationMessages.EditSuccsess}", Severity.Success, config => { config.Icon = Icons.Filled.Edit; });
+                navigationManager.NavigateTo(uri: $"{Resources.LinkCaptions.ProductActivityPlans_Index}/{Model.ActivityPlanTitel.Id}", forceLoad: false);
+           }
+            else
+                snackbar.Add($"{ Resources.InformationMessages.EditFail}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });
+
+              
+        }
+    }
+
+    #endregion =========================================================================================================   
+
+}

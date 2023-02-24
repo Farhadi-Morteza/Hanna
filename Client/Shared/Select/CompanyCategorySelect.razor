@@ -1,0 +1,59 @@
+﻿@namespace MrsComponent
+@inject CompanyCategoryService companyCategoryService
+
+<MudAutocomplete T ="Models.CompanyCategory"
+	Label = "@(Resources.DataDictionary.CompanyCategory)"
+	SearchFunc = "@(Search)"
+	ResetValueOnEmptyText = "true"
+	ToStringFunc="(e => e==null? null : e.Name)"
+	@bind-Value = "@BindTo"
+	Variant = "Variant.Outlined"
+	Clearable = "true"
+	Immediate = "true"
+	Margin ="Margin.Dense"
+	Required = "true"
+	CoerceValue = "true"
+/>
+
+@code {
+	protected override async Task OnInitializedAsync()
+	{
+		SelectList =
+			await companyCategoryService.GetAsync();
+	}
+
+	private IList<Models.CompanyCategory> SelectList{ get; set; }
+
+	private async Task<IEnumerable<Models.CompanyCategory>> Search(string value)
+	{
+		await Task.Delay(1);
+
+		if (string.IsNullOrEmpty(value))
+		{
+			return SelectList;
+		}
+
+		var data = SelectList;
+
+		return data.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+	}
+
+	private Models.CompanyCategory bindingValue =
+		new Models.CompanyCategory();
+
+	[Parameter]
+	public Models.CompanyCategory BindTo
+	{
+		get => bindingValue;
+		set
+		{
+			if (bindingValue == value) return;
+			bindingValue = value;
+			BindToChanged.InvokeAsync(value);
+		}
+	}
+
+	[Parameter]
+	public EventCallback<Models.CompanyCategory> BindToChanged{ get; set; }
+
+}

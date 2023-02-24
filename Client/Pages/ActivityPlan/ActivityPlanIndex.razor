@@ -1,0 +1,274 @@
+﻿@page  "/ActivityPlans/Index/{planId}"
+@inject ActivityPlanService activityPlanService
+@inject PlanService planService
+
+@inject NavigationManager navigationManager
+@inject IDialogService dialogService
+@inject ISnackbar snackbar
+
+<PageTitle>@(Resources.DataDictionary.ActivityPlansList)</PageTitle>
+
+<MrsGrid Justify="Justify.Center"> 
+    
+    <MudItem xs ="11">         
+        <MudPaper>  
+            <MudContainer>                
+                <br />
+                <MudGrid>
+                    
+                    <MudStack Row = "true" Spacing = "@(Infrastructure.Constant.ButtonSpacing)">                       
+                        <MudItem>                        
+                            <MrsButtonCreate ButtonType="ButtonType.Button" OnClick="@(() => Create())" /> 
+                            <AuthorizeView Roles = "User, Admin">
+                                <Authorized>
+                                    <MrsButton ButtonType = "ButtonType.Button" OnClick ="@(() => Reception())">@Resources.DataDictionary.Checkout</MrsButton>
+                                </Authorized>
+                            </AuthorizeView>
+
+                            @if (PlanTitel.PlanCheckout)
+                            {
+                                <AuthorizeView Roles = "Admin">
+                                    <Authorized>
+                                        <MrsButton ButtonType = "ButtonType.Button" OnClick ="@(() => Rejection())">@Resources.DataDictionary.Rejection</MrsButton>
+                                    </Authorized>
+                                </AuthorizeView>                                
+                            }
+
+                        </MudItem>
+                    </MudStack>
+                    
+                </MudGrid> 
+                
+                <br />
+
+            <MrsCardContent>
+                <MudGrid>
+                
+					<MudItem xs="12" sm="6" md="6" >
+						<MudField Label="@(Resources.DataDictionary.PlanTitle)" Variant="Variant.Filled" Margin="Margin.Dense">@(PlanTitel.Titel)</MudField>
+					</MudItem>
+					<MudItem xs="12" sm="6" md="6">
+						<MudField Label="@(Resources.DataDictionary.Year)" Variant="Variant.Filled" Margin="Margin.Dense">@(PlanTitel.Year)</MudField>
+					</MudItem>
+               
+                </MudGrid>
+            </MrsCardContent>
+                
+                <br />
+
+            </MudContainer>
+        </MudPaper>
+    </MudItem>
+
+
+    <MudItem xs="11" Style="text-align:center">
+        <MrsSpinLoader IsLoading="@(ActivityPlans == null)">
+
+            <MrsTable Items="@ActivityPlans"                   
+                      Dense="true">
+
+                <HeaderContent>
+                    <MrsTh>@(Resources.DataDictionary.PrincipalBusiness)</MrsTh>
+                    <MrsTh>@(Resources.DataDictionary.Business)</MrsTh>
+                    <MrsTh>@(Resources.DataDictionary.Activity)</MrsTh>
+                    <MrsTh>@(Resources.DataDictionary.BusinessType)</MrsTh>
+                    <MrsTh>@(Resources.DataDictionary.ProductList)</MrsTh>
+                @*    <MrsTh>@(Resources.DataDictionary.Active)</MrsTh>*@
+
+                    <MrsTh></MrsTh>
+
+                </HeaderContent>
+                
+                <RowTemplate>
+                    <MudTd DataLabel="@(Resources.DataDictionary.PrincipalBusiness)">@context.PrincipalBusiness</MudTd>
+                    <MudTd DataLabel="@(Resources.DataDictionary.Business)">@context.Business.</MudTd>
+                    <MudTd DataLabel="@(Resources.DataDictionary.Activity)">@context.Activity</MudTd>
+                    <MudTd DataLabel="@(Resources.DataDictionary.BusinessType)">@context.BusinessType</MudTd>
+                    <MudTd DataLabel="@(Resources.DataDictionary.ProductList)">
+                        @{System.Text.StringBuilder AcitvityProducts = new System.Text.StringBuilder("");}
+                        @if(@context.ProductActivityPlans.Count() == 0)
+                        {
+                            @*AcitvityProducts.Append(Resources.DataDictionary.Nothing);*@
+                        }
+                        else
+                        {
+                            foreach (var ActivityProduct in @context.ProductActivityPlans)
+                            {
+                                AcitvityProducts.Append(ActivityProduct.ProductSelectViewModel.Name + ", ");
+ 
+                            }                            
+                        }
+                        @(AcitvityProducts.ToString())
+                    </MudTd>
+                    @*<MudTd DataLabel="@(Resources.DataDictionary.Active)"></MudTd>*@
+                    <MudTd Style="text-align:end">
+                        <MudIconButton OnClick="() => Summary(context)" Icon="@Icons.Material.Filled.Article" Size="Size.Small" Class="m-2" Color="Color.Primary" />
+                        <MudIconButton OnClick="() => Edit(context)" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Class="m-2" Color="Color.Info" />                        
+                        <MudIconButton OnClick="() => Delete(context)" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Class="m-2" Color="Color.Error"></MudIconButton>
+                    </MudTd>
+                </RowTemplate>
+
+
+            </MrsTable>
+        </MrsSpinLoader>
+     
+    </MudItem>
+
+</MrsGrid>
+
+
+
+@code 
+{
+    #region Constructor ================================================================================================
+
+    protected async override Task OnInitializedAsync()
+    {
+        PlanTitel =
+            await planService.GetPlanTitelByIdAsync(planId); 
+
+        ActivityPlans =
+            await activityPlanService.GetIndexByPlanIdAsync(planId);   
+    }
+
+
+    #endregion =========================================================================================================
+
+    #region Properties =================================================================================================
+    public double Mydouble { get; set; }
+    public ViewModels.PlanTitelViewModel PlanTitel { get; set; } =
+        new ViewModels.PlanTitelViewModel();
+
+    public IList<ViewModels.ActivityPlanIndexViewModel>? ActivityPlans { get; set; }
+
+    [Parameter]
+    public string planId { get; set; } = string.Empty;
+
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+    public void Create()
+    {
+        navigationManager.NavigateTo(uri: $"{Resources.LinkCaptions.ActivityPlan_Create}/{planId}", forceLoad: false);
+    }
+
+    private void Edit(ViewModels.ActivityPlanIndexViewModel editEntity)
+    {
+        navigationManager.NavigateTo(uri: $"{Resources.LinkCaptions.ActivityPlan_Edit}/{editEntity.Id}", forceLoad: false);
+    }
+
+    private async Task Delete(ViewModels.ActivityPlanIndexViewModel deleteEntity)
+    {
+        var dialog = dialogService.Show<MrsDialogDelete>();
+        var result = await dialog.Result;
+
+        if (result.Cancelled == false)
+        {
+            bool Isdeleted = await activityPlanService.DeleteAsync(deleteEntity.Id.ToString());
+
+            if (Isdeleted)
+            {
+                ActivityPlans?.Remove(deleteEntity);               
+                snackbar.Add($"{Resources.InformationMessages.DeleteSuccess}", Severity.Success, config => { config.Icon = Icons.Filled.Delete; });                
+            }
+            else
+            {
+                snackbar.Add($"{Resources.InformationMessages.DeleteFail}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });
+            }
+        }
+    }
+
+    private void Back()
+    {
+        navigationManager.NavigateTo(uri: $"{Resources.LinkCaptions.Metric_Index}", forceLoad: false);
+    }
+
+    private void Summary(ViewModels.ActivityPlanIndexViewModel summaryEntity)
+    {
+        navigationManager.NavigateTo(uri: $"{Resources.LinkCaptions.ActivityPlan_Summary}/{summaryEntity.Id}", forceLoad: false);
+    }
+
+    private async void Reception()
+    {
+
+
+        //Resources rm = new ResourceManager("resource root name", 
+        //    Assembly.GetExecutingAssembly());
+
+        var parameters = new DialogParameters();
+        parameters.Add(Constant.DialogParameters.ContentText, string.Format(Resources.Dialog.Confirm, PlanTitel.Titel));
+        parameters.Add(Constant.DialogParameters.ButtonText, Resources.Buttoms.Confirm);
+        parameters.Add(Constant.DialogParameters.Color, Color.Info);
+        parameters.Add(Constant.DialogParameters.Titel, Resources.DataDictionary.Confirmation);
+
+        var dialog = dialogService.Show<MrsDialogTemplating>(Resources.DataDictionary.Warning, parameters);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult.Cancelled == false)
+        {
+            bool result = false;
+            if (PlanTitel.PlanCheckout == false)
+            {
+                result =
+                   await planService.PlanCheckoutAsync(planId);               
+            }
+            else if (PlanTitel.PlanCheckout == true && PlanTitel.PlanApproval == false)
+            {
+                result =
+                    await planService.PlanApprovalAsync(planId);
+            }
+
+
+            if (result)
+            {
+                navigationManager.NavigateTo(uri: Resources.LinkCaptions.SuggestedPlan, forceLoad: false);             
+            }
+            else
+            {
+                snackbar.Add($"{Resources.InformationMessages.DeleteFail}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });
+            }
+        }
+
+
+    }
+
+    private async void Rejection()
+    {
+        var parameters = new DialogParameters();
+        parameters.Add(Constant.DialogParameters.ContentText, string.Format(Resources.Dialog.Reject, PlanTitel.Titel));
+        parameters.Add(Constant.DialogParameters.ButtonText, Resources.Buttoms.Confirm);
+        parameters.Add(Constant.DialogParameters.Color, Color.Warning);
+        parameters.Add(Constant.DialogParameters.Titel, Resources.DataDictionary.Rejection);
+
+        var dialog = dialogService.Show<MrsDialogTemplating>(Resources.DataDictionary.Warning, parameters);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult.Cancelled == false)
+        {
+            bool result = false;
+            
+            if (PlanTitel.PlanCheckout == true && PlanTitel.PlanApproval == false)
+            {
+                result =
+                    await planService.RejectPlanCheckoutAsync(planId);
+            }
+
+
+            if (result)
+            {
+                navigationManager.NavigateTo(uri: Resources.LinkCaptions.SuggestedPlan, forceLoad: false);             
+            }
+            else
+            {
+                snackbar.Add($"{Resources.InformationMessages.DeleteFail}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });
+            }
+        }
+
+
+    }
+
+
+    #endregion =========================================================================================================
+
+}

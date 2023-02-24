@@ -1,0 +1,205 @@
+﻿@inject PlanService planService
+@inject NavigationManager navigationManager
+@inject ISnackbar snackbar
+
+<PageTitle>@Resources.DataDictionary.ActivityPlan</PageTitle>
+
+<MrsContainer MaxWidth = "MaxWidth.Medium">
+    <EditForm 
+        Model = "@(Model)" 
+        OnValidSubmit = "@(() => HandleValidSubmit())"
+        OnInvalidSubmit = "@(() => HandleInvalidSubmit())"
+        >
+        <DataAnnotationsValidator />
+
+    <MudItem xs ="12">         
+        <MudPaper>             
+
+            <MrsCardContent>
+                <MudGrid>
+                
+					<MudItem xs="12" sm="6" md="6" >
+						<MudField Label="@(Resources.DataDictionary.PlanTitle)" Variant="Variant.Filled" Margin="Margin.Dense">@(Model.PlanTitel.Titel)</MudField>
+					</MudItem>
+					<MudItem xs="12" sm="6" md="6">
+						<MudField Label="@(Resources.DataDictionary.Year)" Variant="Variant.Filled" Margin="Margin.Dense">@(Model.PlanTitel.Year)</MudField>
+					</MudItem>
+               
+                </MudGrid>
+            </MrsCardContent>
+
+        </MudPaper>
+    </MudItem>
+    <br />
+
+            <MrsCard>
+
+                <MrsCardContent>
+                    <MrsContainer MaxWidth = "MaxWidth.Small">
+                        <MrsGrid>
+                            @if (Type == EditFormType.Edit)
+                            {
+                                DisabledActivity = true;
+                            }
+                            <MudItem xs="12">
+                                <ActivitySelect Disabled = "@(DisabledActivity)" @bind-BindTo = "@(Model.ActivitySelectViewModel)"/> 
+                            </MudItem>
+                            
+                            <MudItem xs = "12">
+                                <BusinessTypeSelect @bind-BindTo = "@(Model.BusinessType)" />
+                            </MudItem>                            
+
+                            <MudItem xs="12">
+                                <MudNumericField 
+                                    Variant = "@(Variant.Outlined)"
+                                    Label = "@(ForecastFinalPriceLable.ToString())"
+                                    @bind-Value = "@(Model.ForecastFinalPrice)"
+                                    Margin="Margin.Dense"
+                                    Culture = "@_en"       
+                                    HideSpinButtons = "true"
+                                />                                    
+                            </MudItem>
+
+
+                            @if(Model.ActivitySelectViewModel?.ActivityIndicatorSelectViewModel != null)
+                            {
+                            <MudItem xs="12">
+                                <MudText Color = "Color.Primary" Typo="Typo.button">@($"{Resources.DataDictionary.ActivityIndicator}: { Model.ActivitySelectViewModel.ActivityIndicatorSelectViewModel.Name} ")</MudText>
+                            </MudItem>                            
+                            }
+
+                            <MudItem xs="12">
+                                <MudNumericField                                     
+                                    Variant = "@(Variant.Outlined)"
+                                    Clearable = "false"                               
+                                    Label ="@(ForecastLevelLable.ToString())"
+                                    @bind-Value = "@(Model.ForecastLevel)"
+                                    Margin="Margin.Dense"
+                                    Culture = "@_en"
+                                    HideSpinButtons = "true"
+                                />                              
+            
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudNumericField 
+                                    Variant = "@(Variant.Outlined)"
+                                    Clearable = "false"
+                                    Immediate = "false"
+                                    Label = "@(CapacitylevelLable.ToString())"
+                                    @bind-Value = "@(Model.Capacitylevel)"
+                                    Margin="Margin.Dense"
+                                    Culture = "@_en"
+                                    HideSpinButtons = "true"
+                                />                            
+                            </MudItem>
+
+                        </MrsGrid>
+                    </MrsContainer>              
+                </MrsCardContent>
+
+                <MudCardActions>
+                </MudCardActions>
+
+            </MrsCard>
+
+        @*</PlanFormBase>*@
+    
+        <br />
+
+    <MudItem xs = "12">   
+         <MudPaper>
+             <MudContainer>
+                 <br />
+                <MudStack Row = "true" Spacing = "1">
+                
+                    @if(Type == EditFormType.Create)
+                    {
+                        <MrsButtonSubmit ButtonType ="ButtonType.Submit"></MrsButtonSubmit>
+                    }
+                    else
+                    {
+                        <MrsButtonEdit ButtonType = "ButtonType.Submit"></MrsButtonEdit>
+                    }             
+                   <MrsButtonReturn OnClick ="@(() => Back())">@Resources.Buttoms.Back</MrsButtonReturn>
+                </MudStack>
+                 <br />
+             </MudContainer>
+        </MudPaper>
+    </MudItem>
+     
+    </EditForm>
+</MrsContainer>
+
+@{
+    ForecastFinalPriceLable.Clear();
+    ForecastFinalPriceLable.Append($"{Resources.DataDictionary.ForecastFinalPrice} ");
+    ForecastFinalPriceLable.Append($"{Resources.DataDictionary.Year} ");
+    ForecastFinalPriceLable.Append($"{Model.PlanTitel.Year}");
+    ForecastFinalPriceLable.Append($" ({Resources.DataDictionary.MillionRials})");
+
+    ForecastLevelLable.Clear();
+    ForecastLevelLable.Append($"{Resources.DataDictionary.ForecastLevel} ");
+    ForecastLevelLable.Append($"{Resources.DataDictionary.Year} ");
+    ForecastLevelLable.Append(Model.PlanTitel?.Year);
+    ForecastLevelLable.Append($" ({Model.ActivitySelectViewModel?.MetricSelectViewModel?.Name})");    
+                             
+    CapacitylevelLable.Clear();
+    CapacitylevelLable.Append($"{Resources.DataDictionary.Capacitylevel} ");
+    CapacitylevelLable.Append($"{Resources.DataDictionary.Year} ");
+    CapacitylevelLable.Append(Model.PlanTitel?.Year);
+    CapacitylevelLable.Append($" ({Model.ActivitySelectViewModel?.MetricSelectViewModel?.Name})");    
+} 
+
+@code {
+    #region Constructor ================================================================================================
+
+    #endregion =========================================================================================================
+
+
+    #region Properties =================================================================================================
+
+    [Parameter]
+    public ViewModels.ActivityPlanViewModel Model { get; set; } =
+        new ViewModels.ActivityPlanViewModel();
+
+    [Parameter] 
+    public EditFormType Type { get; set; }
+
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; } 
+
+	public bool DisabledActivity { get; set; } = false;
+
+    public System.Text.StringBuilder ForecastFinalPriceLable { get; set; }
+        = new System.Text.StringBuilder();
+
+    public System.Text.StringBuilder ForecastLevelLable { get; set; } 
+        = new System.Text.StringBuilder();
+
+    public System.Text.StringBuilder CapacitylevelLable { get; set; } 
+        = new System.Text.StringBuilder();
+
+    public System.Globalization.CultureInfo _en = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+    private void HandleValidSubmit()
+    {
+        OnValidSubmit.InvokeAsync(Model);
+    }
+
+    protected void HandleInvalidSubmit()
+    {
+        snackbar.Add($"{Resources.InformationMessages.FillAll}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });       
+    }
+
+    private void Back()
+    {
+        navigationManager.NavigateTo(uri: $"{Resources.LinkCaptions.ActivityPlan_Index}/{Model.PlanTitel.Id}", forceLoad: false);
+    }
+
+    #endregion =========================================================================================================
+}

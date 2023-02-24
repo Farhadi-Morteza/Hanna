@@ -1,0 +1,19 @@
+﻿@namespace MrsComponent
+
+<SpinLoader IsLoading="@IsLoading" Spinner="@SpinnerType" Center="true" Color="rgba(255,152,0,1)">
+    @*Color="rgba(0,255,0,0.3)" Color="rgba(0,255,0,0.3)>*@
+    <ContentTemplate>
+        @ChildContent
+    </ContentTemplate>
+</SpinLoader>
+
+@code {
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public bool IsLoading { get; set; } = false;
+
+    [Parameter]
+    public SpinnerType SpinnerType { get; set; } = SpinnerType.Grid;
+}

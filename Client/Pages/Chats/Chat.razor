@@ -1,0 +1,119 @@
+﻿@page "/chat/{ContactId}"
+@page "/Chat"
+@inject UserService userService
+@inject ChatMessageService chatMessageService
+
+<h3>Chat</h3>
+
+<div class="d-flex flex-grow-1 flex-row">
+    <MudPaper Elevation="25" Class="py-4 flex-grow-1">
+
+      
+        <MudPaper Elevation="25" Class="d-flex flex-row px-2 mx-4" Style="">
+            <MudTextField T="string" Placeholder="Enter your message..."DisableUnderLine="true" Class="mt-n2 mx-4"
+                          @bind-Value="CurrentMessage" For="@(()=> CurrentMessage)" />
+            <MudButton OnClick="SubmitAsync" StartIcon="@Icons.Material.Outlined.Send" Color="Color.Secondary" ButtonType="ButtonType.Button">Send</MudButton>
+        </MudPaper>
+    </MudPaper>
+        <MudPaper Elevation="25" Class="pa-3 ml-6" MinWidth="350px">
+            <MudToolBar Dense="true">
+                <MudText Typo="Typo.h6" Inline="true" Class="mr-2">#</MudText>
+                <MudText Typo="Typo.h6">contacts</MudText>
+            </MudToolBar>
+            <div class="d-flex flex-column px-4" style="max-height:70vh;min-height:70vh; overflow:scroll;">
+                <MudList Clickable="true">
+                    @foreach (var user in ChatUsers)
+                    {
+                        <MudListItem Class="pa-0 px-2"  OnClick="@(() => LoadUserChat(user.Id))">
+                            <div class="d-flex flex-row mt-n1 mb-n1">
+                                <div class="mr-4">
+                                    <MudBadge Class="my-2">
+         
+                                        <MudAvatar Size="Size.Small"  Color="Color.Error" Style="height:50px; width:50px;">@user.FullName.ToUpper().FirstOrDefault()</MudAvatar>
+                                    
+                                    </MudBadge>
+                                </div>
+                                <div>
+                                    <MudText Typo="Typo.body2" Class="mt-3 mb-n2">@user.FullName</MudText>
+                                    <MudText Typo="Typo.caption" Style="font-size: xx-small!important;">@user.Username</MudText>
+                                </div>
+                            </div>
+                        </MudListItem>
+                    }
+                </MudList>
+            </div>
+        </MudPaper>
+</div>
+
+@code {
+    [CascadingParameter] public HubConnection hubConnection { get; set; }
+    public IList<ViewModels.UserViewModel> ChatUsers { get; set; }
+    [Parameter] public Guid ContactId { get; set; }
+    [Parameter] public string ContactFullName { get; set; }
+    private IList<Models.ChatMessage> messages;
+    [Parameter] public string CurrentMessage { get; set; } = string.Empty;
+    [Parameter] public Guid CurrentUserId { get; set; } = Guid.Parse("2c2e0fce-38a6-4975-964d-8640666e818b");
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (hubConnection is null)
+        {
+            hubConnection = 
+                new HubConnectionBuilder()
+                .WithUrl(_navigationManager
+                .ToAbsoluteUri(""))
+                .Build();
+        }
+        if (hubConnection.State == HubConnectionState.Disconnected)
+        {
+            await hubConnection.StartAsync();
+        }
+
+        var state =
+            await _stateProvider.GetAuthenticationStateAsync();
+
+        var user = state.User;
+        var ss = user.Identity.Name;
+
+        ChatUsers =
+            await userService.GetAsync();
+    }
+
+    async Task LoadUserChat(Guid userId)
+    {
+        var contact =
+            await userService.GetByIdAsync(userId);
+
+        //ContactId = contact.Id;
+        ContactFullName = contact.FullName;
+        _navigationManager.NavigateTo($"Chat/{ContactId}");
+        messages = new List<Models.ChatMessage>();
+        messages =
+            await chatMessageService.GetAsync();
+        //            await _chatManager.GetConversationAsync(ContactId);
+    }
+
+    private async Task SubmitAsync()
+    {
+        if (!string.IsNullOrEmpty(CurrentMessage))
+        {
+            //Save Message to DB
+            var chatHistory = new ViewModels.ChatMessageViewModel()
+                {
+                    Message = CurrentMessage,
+                    ToUserId = Guid.Parse("3f2f966f-0bd1-422b-a984-8661a7c14f90"),
+                    CreatedDate = DateTime.Now,
+                    FromUserId = CurrentUserId,
+                 
+        };
+            //await _chatManager.SaveMessageAsync(chatHistory);
+            await chatMessageService.PostAsync(chatHistory);
+            chatHistory.FromUserId = CurrentUserId;
+            //await hubConnection.SendAsync("SendMessageAsync", chatHistory, CurrentUserEmail);
+            CurrentMessage = string.Empty;
+        }
+    }
+
+ 
+
+}

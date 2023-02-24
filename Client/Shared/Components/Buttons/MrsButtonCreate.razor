@@ -1,0 +1,35 @@
+﻿@namespace MrsComponent
+
+<MudButton
+          Link="@Link"
+           Variant="@Variant"
+           StartIcon="@Icons.Material.Filled.PlaylistAdd"
+           Color="@Color.Info"
+           ButtonType="@ButtonType"
+           OnClick="(e) => ButtonClicked(e)"
+           FullWidth ="@(FullWidth)"
+           >
+    @if (ChildContent == null)
+    {
+        @Resources.Buttoms.Add
+    }
+    else
+    {
+        @(ChildContent)
+    }
+</MudButton>
+
+@code {
+
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public string Link { get; set; }
+    [Parameter] public Variant Variant { get; set; } = MudBlazor.Variant.Filled;
+    [Parameter] public ButtonType ButtonType { get; set; }
+    [Parameter] public bool FullWidth { get; set; } = false;
+
+    private void ButtonClicked(MouseEventArgs e)
+    {
+        OnClick.InvokeAsync(e);
+    }
+}

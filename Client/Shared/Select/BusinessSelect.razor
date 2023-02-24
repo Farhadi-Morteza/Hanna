@@ -1,0 +1,61 @@
+﻿@namespace MrsComponent
+@inject BusinessService businessService
+
+<MudAutocomplete T ="ViewModels.BusinessSelectViewModel"
+	Label = "@(Resources.DataDictionary.Business)"
+	SearchFunc = "@(Search)"
+	ResetValueOnEmptyText = "true"
+	ToStringFunc="(e => e==null? null : e.Name)"
+	@bind-Value = "@BindTo"
+	Variant = "Variant.Outlined"
+	Clearable = "true"
+	Immediate = "true"
+	Margin ="Margin.Dense"
+	Required = "true"
+	CoerceValue = "true"
+/>
+
+@code {
+
+	protected async override Task OnInitializedAsync()
+	{
+		SelectList =
+			await businessService.GetSelectAsync();
+	}
+
+	private IList<ViewModels.BusinessSelectViewModel> SelectList{ get; set; }
+
+	private async Task<IEnumerable<ViewModels.BusinessSelectViewModel>> Search(string value)
+	{
+		await Task.Delay(1);
+
+		if (string.IsNullOrEmpty(value))
+		{
+			return SelectList;
+		}
+
+		var data = SelectList;
+
+		return data.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+	}
+
+	private ViewModels.BusinessSelectViewModel bindingValue =
+		new ViewModels.BusinessSelectViewModel();
+
+	[Parameter]
+	public ViewModels.BusinessSelectViewModel BindTo
+	{
+		get => bindingValue;
+		set
+		{
+			if (bindingValue == value) return;
+			bindingValue = value;
+			BindToChanged.InvokeAsync(value);
+		}
+	}
+
+	[Parameter]
+	public EventCallback<ViewModels.BusinessSelectViewModel> BindToChanged{ get; set; }
+
+
+}

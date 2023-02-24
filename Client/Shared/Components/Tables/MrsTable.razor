@@ -1,0 +1,406 @@
+﻿@namespace MrsComponent
+@typeparam T
+
+
+<MudTable Items="@(Items)"
+          RowTemplate="@RowTemplate"
+          HeaderContent="@HeaderContent"
+          Dense="true"
+          Hover="@Hover"
+          Bordered="@Bordered"
+          Striped="@Striped"
+          Elevation="@Elevation"
+          Square="@Square"
+          Outlined="@Outlined"
+          Breakpoint="@Breakpoint"
+          FixedHeader="@FixedHeader"
+          FixedFooter="@FixedFooter"
+          Height="@Height"
+          SortLabel="@SortLabel"
+          AllowUnsorted="@AllowUnsorted"
+          MultiSelection="@MultiSelection"
+          Loading="@Loading"
+          LoadingProgressColor="@LoadingProgressColor"
+          CustomHeader="@CustomHeader"
+          HeaderClass="@HeaderClass"
+          FooterContent="@FooterContent"
+          CustomFooter="@CustomFooter"
+          FooterClass="@FooterClass"
+          ColGroup="@ColGroup"
+          ReadOnly="@ReadOnly"
+          OnCommitEditClick="@OnCommitEditClick"
+          OnCancelEditClick="@OnCancelEditClick"
+          OnPreviewEditClick="@OnPreviewEditClick"
+          CommitEditCommandParameter="@CommitEditCommandParameter"
+          CommitEditTooltip="@CommitEditTooltip"
+          CancelEditTooltip="@CancelEditTooltip"
+          CommitEditIcon="@CommitEditIcon"
+          CancelEditIcon="@CancelEditIcon"
+          RowEditPreview="@RowEditPreview"
+          RowEditCommit="@RowEditCommit"
+          RowEditCancel="@RowEditCancel"
+          TotalItems="@TotalItems"
+          RowClass="@RowClass"
+          RowStyle="@RowStyle"
+          Virtualize="@Virtualize"
+          Filter="@Filter"
+          >
+    
+    <ToolBarContent>
+        <MudText Typo="Typo.subtitle1">@(Title)</MudText>
+        <MudSpacer />
+        
+    </ToolBarContent> 
+    @*<MudTextField @bind-Value="searchString" Variant="Variant.Text" Placeholder="@(Resources.DataDictionary.Search)" Adornment="Adornment.Start" AdornmentIcon="@Icons.Filled.Search" IconSize="Size.Medium" Class="mt-0" />*@                               
+    
+    
+    <PagerContent>
+        @if (ShowPagerContent)
+        {
+            <MudTablePager Style="" InfoFormat="@(infoFormat)" RowsPerPageString="@(Resources.DataDictionary.RowsPerPage)" />    
+        }
+        
+    </PagerContent>
+    @*background-color: lightgray;*@
+
+    
+ 
+
+</MudTable>
+
+
+@code {
+    [Parameter] public Func<T, bool> Filter { get; set; } = null;
+
+    [Parameter] public RenderFragment SearchContent { get; set; }
+    //private bool FilterFunc(T element, string searchString)
+    //{
+
+    //}
+
+
+    private string infoFormat = "{first_item}-{last_item} ({all_items})";
+
+    private string searchString = "";
+    //private string searchString2 = "5";
+
+
+    //private bool FilterFunc1(T t) => FilterFunc(t,"5");
+    //private bool FilterFunc2(T t) => FilterFunc(t, searchString2);
+
+    //private bool FilterFunc(T t, string searchString)
+    //{
+    //    bool Result = true;
+    //    searchString = "5";
+
+    //    if (string.IsNullOrWhiteSpace(searchString))
+    //        Result = true;
+
+
+
+    //    if (t.ToString().Contains("5"))
+    //        Result = true;
+
+    //    //foreach (T item in Items)
+    //    //{
+    //    //    for (int i = 0; i < Items.Count(); i++)
+    //    //    {
+    //    //        if(Items. ==)
+    //    //    }
+
+
+    //    //    if (item.ToString().ToLower().Contains(searchString.ToLower(), StringComparison.OrdinalIgnoreCase))
+    //    //    {
+    //    //        string mm = item.ToString();
+
+    //    //        Result = true;
+    //    //        break;
+    //    //    }
+    //    //}
+    //    return Result;
+    //}
+
+
+
+
+
+    //[Parameter]
+    //public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public bool ShowPagerContent { get; set; } = true;
+
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public IEnumerable<T> Items { get; set; }
+
+    //[Parameter]
+    //public RenderFragment HeaderContent { get; set; }
+
+    [Parameter]
+    public RenderFragment<T> RowTemplate { get; set; }
+
+
+    internal object _editingItem = null;
+    internal bool _isEditing => _editingItem != null;
+
+    private int _currentPage = 0;
+    private bool _isFirstRendered = false;
+
+    /// <summary>
+    /// The higher the number, the heavier the drop-shadow. 0 for no shadow.
+    /// </summary>
+    [Parameter] public int Elevation { set; get; } = 25;
+
+    /// <summary>
+    /// Set true to disable rounded corners
+    /// </summary>
+    [Parameter] public bool Square { get; set; }
+
+    /// <summary>
+    /// If true, table will be outlined.
+    /// </summary>
+    [Parameter] public bool Outlined { get; set; }
+
+    /// <summary>
+    /// If true, table's cells will have left/right borders.
+    /// </summary>
+    [Parameter] public bool Bordered { get; set; } = true;
+
+    /// <summary>
+    /// Set true for rows with a narrow height
+    /// </summary>
+    [Parameter] public bool Dense { get; set; } = true;
+
+    /// <summary>
+    /// Set true to see rows hover on mouse-over.
+    /// </summary>
+    [Parameter] public bool Hover { get; set; } = true;
+
+    /// <summary>
+    /// If true, striped table rows will be used.
+    /// </summary>
+    [Parameter] public bool Striped { get; set; } = true;
+
+    /// <summary>
+    /// At what breakpoint the table should switch to mobile layout. Takes None, Xs, Sm, Md, Lg and Xl the default behavior is breaking on Xs.
+    /// </summary>
+    [Parameter] public Breakpoint Breakpoint { get; set; } = Breakpoint.Xs;
+
+    /// <summary>
+    /// When true, the header will stay in place when the table is scrolled. Note: set Height to make the table scrollable.
+    /// </summary>
+    [Parameter] public bool FixedHeader { get; set; } = true;
+
+    /// <summary>
+    /// When true, the footer will be visible is not scrolled to the bottom. Note: set Height to make the table scrollable.
+    /// </summary>
+    [Parameter] public bool FixedFooter { get; set; }
+
+    /// <summary>
+    /// Setting a height will allow to scroll the table. If not set, it will try to grow in height. You can set this to any CSS value that the
+    /// attribute 'height' accepts, i.e. 500px.
+    /// </summary>
+    [Parameter] public string Height { get; set; }
+
+    /// <summary>
+    /// If table is in smalldevice mode and uses any kind of sorting the text applied here will be the sort selects label.
+    /// </summary>
+    [Parameter] public string SortLabel { get; set; }
+
+    /// <summary>
+    /// If true allows table to be in an unsorted state through column clicks (i.e. first click sorts "Ascending", second "Descending", third "None").
+    /// If false only "Ascending" and "Descending" states are allowed (i.e. there always should be a column to sort).
+    /// </summary>
+    [Parameter] public bool AllowUnsorted { get; set; } = true;
+
+    /// <summary>
+    /// If the table has more items than this number, it will break the rows into pages of said size.
+    /// Note: requires a MudTablePager in PagerContent.
+    /// </summary>
+
+    /// <summary>
+    /// Rows Per Page two-way bindable parameter
+    /// </summary>
+    [Parameter] public EventCallback<int> RowsPerPageChanged { get; set; }
+
+    /// <summary>
+    /// The page index of the currently displayed page (Zero based). Usually called by MudTablePager.
+    /// Note: requires a MudTablePager in PagerContent.
+    /// </summary>
+    [Parameter]
+    public int CurrentPage
+    {
+        get => _currentPage;
+        set
+        {
+            if (_currentPage == value)
+                return;
+            _currentPage = value;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    /// <summary>
+    /// Set to true to enable selection of multiple rows with check boxes.
+    /// </summary>
+    [Parameter] public bool MultiSelection { get; set; }
+
+    /// <summary>
+    /// Optional. Add any kind of toolbar to this render fragment.
+    /// </summary>
+    [Parameter] public RenderFragment ToolBarContent { get; set; }
+
+    /// <summary>
+    /// Show a loading animation, if true.
+    /// </summary>
+    [Parameter] public bool Loading { get; set; }
+
+    /// <summary>
+    /// The color of the loading progress if used. It supports the theme colors.
+    /// </summary>
+    [Parameter] public Color LoadingProgressColor { get; set; } = Color.Info;
+
+    /// <summary>
+    /// Add MudTh cells here to define the table header. If <see cref="CustomHeader"/> is set, add one or more MudTHeadRow instead.
+    /// </summary>
+    [Parameter] public RenderFragment HeaderContent { get; set; }
+
+    /// <summary>
+    /// Specify if the header has multiple rows. In that case, you need to provide the MudTHeadRow tags.
+    /// </summary>
+    [Parameter] public bool CustomHeader { get; set; } = true;
+
+    /// <summary>
+    /// Add a class to the thead tag
+    /// </summary>
+    [Parameter] public string HeaderClass { get; set; }
+
+    /// <summary>
+    /// Add MudTd cells here to define the table footer. If<see cref="CustomFooter"/> is set, add one or more MudTFootRow instead.
+    /// </summary>
+    [Parameter] public RenderFragment FooterContent { get; set; }
+
+    /// <summary>
+    /// Specify if the footer has multiple rows. In that case, you need to provide the MudTFootRow tags.
+    /// </summary>
+    [Parameter] public bool CustomFooter { get; set; }
+
+    /// <summary>
+    /// Add a class to the tfoot tag
+    /// </summary>
+    [Parameter] public string FooterClass { get; set; }
+
+    /// <summary>
+    /// Specifies a group of one or more columns in a table for formatting.
+    /// Ex:
+    /// table
+    ///     colgroup
+    ///        col span="2" style="background-color:red"
+    ///        col style="background-color:yellow"
+    ///      colgroup
+    ///      header
+    ///      body
+    /// table
+    /// </summary>
+    [Parameter] public RenderFragment ColGroup { get; set; }
+
+    //[Parameter] public RenderFragment<T> RowTemplate { get; set; } <-- see MudTable.razor
+
+    /// <summary>
+    /// Add MudTablePager here to enable breaking the rows in to multiple pages.
+    /// </summary>
+    [Parameter] public RenderFragment PagerContent { get; set; }
+
+
+    /// <summary>
+    /// Locks Inline Edit mode, if true.
+    /// </summary>
+    [Parameter] public bool ReadOnly { get; set; } = false;
+
+    /// <summary>
+    /// Button commit edit click event.
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnCommitEditClick { get; set; }
+
+    /// <summary>
+    /// Button cancel edit click event.
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnCancelEditClick { get; set; }
+
+    /// <summary>
+    /// Event is called before the item is modified in inline editing.
+    /// </summary>
+    [Parameter] public EventCallback<object> OnPreviewEditClick { get; set; }
+
+    /// <summary>
+    /// Command executed when the user clicks on the CommitEdit Button.
+    /// </summary>
+    //[Parameter] public ICommand CommitEditCommand { get; set; }
+
+    /// <summary>
+    /// Command parameter for the CommitEdit Button. By default, will be the row level item model, if you won't set anything else.
+    /// </summary>
+    [Parameter] public object CommitEditCommandParameter { get; set; }
+
+    /// <summary>
+    /// Tooltip for the CommitEdit Button.
+    /// </summary>
+    [Parameter] public string CommitEditTooltip { get; set; }
+
+    /// <summary>
+    /// Tooltip for the CancelEdit Button.
+    /// </summary>
+    [Parameter] public string CancelEditTooltip { get; set; }
+
+    /// <summary>
+    /// Sets the Icon of the CommitEdit Button.
+    /// </summary>
+    [Parameter] public string CommitEditIcon { get; set; } = Icons.Material.Filled.Done;
+
+    /// <summary>
+    /// Sets the Icon of the CancelEdit Button.
+    /// </summary>
+    [Parameter] public string CancelEditIcon { get; set; } = Icons.Material.Filled.Cancel;
+
+    /// <summary>
+    /// Define if Cancel button is present or not for inline editing.
+    /// </summary>
+    [Parameter] public bool CanCancelEdit { get; set; }
+
+    /// <summary>
+    /// The method is called before the item is modified in inline editing.
+    /// </summary>
+    [Parameter] public Action<object> RowEditPreview { get; set; }
+
+    /// <summary>
+    /// The method is called when the edition of the item has been committed in inline editing.
+    /// </summary>
+    [Parameter] public Action<object> RowEditCommit { get; set; }
+
+    /// <summary>
+    /// The method is called when the edition of the item has been canceled in inline editing.
+    /// </summary>
+    [Parameter] public Action<object> RowEditCancel { get; set; }
+
+    /// <summary>
+    /// Number of items. Used only with ServerData="true"
+    /// </summary>
+    [Parameter] public int TotalItems { get; set; }
+
+    /// <summary>
+    /// CSS class for the table rows. Note, many CSS settings are overridden by MudTd though
+    /// </summary>
+    [Parameter] public string RowClass { get; set; }
+
+    /// <summary>
+    /// CSS styles for the table rows. Note, many CSS settings are overridden by MudTd though
+    /// </summary>
+    [Parameter] public string RowStyle { get; set; }
+
+    /// <summary>
+    /// If true, the results are displayed in a Virtualize component, allowing a boost in rendering speed.
+    /// </summary>
+    [Parameter] public bool Virtualize { get; set; }
+}

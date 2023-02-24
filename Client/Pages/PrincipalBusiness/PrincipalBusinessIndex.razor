@@ -1,0 +1,107 @@
+﻿@page  "/PrincipalBusiness/Index"
+@inject PrincipalBusinessService principalBusinessService
+@inject NavigationManager navigationManager
+@inject IDialogService dialogService
+@inject ISnackbar snackbar
+
+<PageTitle>@(Resources.DataDictionary.PrinsipalBusinessList)</PageTitle>
+
+
+
+<MrsGrid Justify="Justify.Center">
+
+    <MudItem xs ="8">
+        <MudPaper>        
+            <MudGrid>
+                <MudItem>
+                    &nbsp &nbsp;
+                     <MrsButtonCreate ButtonType="ButtonType.Button"  OnClick="@(() => Create())" />
+                </MudItem>
+            </MudGrid>                 
+        </MudPaper>
+    </MudItem>
+
+    <MudBreakpointProvider />
+
+    <MudItem xs="8" Style="text-align:center">
+        <MrsSpinLoader IsLoading="@(Index == null)">
+
+            <MrsTable Items="@Index"
+                      Title="@(Resources.DataDictionary.PrinsipalBusinessList)"
+                      Dense="true">
+                <HeaderContent>
+                    <MrsTh>@(Resources.DataDictionary.Name)</MrsTh>
+                    <MrsTh>@(Resources.DataDictionary.IsActive)</MrsTh>
+                    <MrsTh></MrsTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="@(Resources.DataDictionary.Name)">@context.Name</MudTd>
+                    <MudTd DataLabel=@(Resources.DataDictionary.IsActive)>
+                        <MrsCheckBox @bind-Checked="@context.IsActive" Disabled="true"></MrsCheckBox>
+                    </MudTd>
+                    <MudTd Style="text-align:end">
+                        <MudIconButton OnClick="() => Delete(context)" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Class="m-2" Color="Color.Error"></MudIconButton>
+                        <MudIconButton OnClick="() => Edit(context)" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Class="m-2" Color="Color.Info" />
+                    </MudTd>
+                </RowTemplate>
+            </MrsTable>
+        </MrsSpinLoader>
+     
+    </MudItem>
+</MrsGrid>
+
+
+@code {
+    #region Constructor ================================================================================================
+
+    protected async override Task OnInitializedAsync()
+    {
+        Index = 
+            await principalBusinessService.GetAsync();
+
+    }
+
+    #endregion =========================================================================================================
+
+    #region Properties =================================================================================================
+
+    public IList<Models.PrincipalBusiness> Index { get; set; }
+
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+    public void Create()
+    {
+        navigationManager.NavigateTo(uri: Resources.LinkCaptions.PrincipalBusiness_Create, forceLoad: false);
+    }
+
+    private void Edit(Models.PrincipalBusiness editVM)
+    {
+        navigationManager.NavigateTo(uri: $"{Resources.LinkCaptions.PrincipalBusiness_Edit}/{editVM.Id}", forceLoad: false);
+    }
+
+    private async Task Delete(Models.PrincipalBusiness deleteEntity)
+    {
+        var dialog = dialogService.Show<MrsDialogDelete>();
+        var result = await dialog.Result;
+
+        if (result.Cancelled == false)
+        {
+            bool Isdeleted = await principalBusinessService.DeleteAsync(deleteEntity.Id.ToString());
+
+            if (Isdeleted)
+            {
+                Index.Remove(deleteEntity);
+                //snackbar.Add($"{string.Format(Resources.InformationMessages.DeleteSuccess, deleteEntity.Name)}", Severity.Success, config => { config.Icon = Icons.Filled.Delete; });    
+                snackbar.Add($"{Resources.InformationMessages.DeleteSuccess}", Severity.Success, config => { config.Icon = Icons.Filled.Delete; });                
+            }
+            else
+            {
+                snackbar.Add($"{Resources.InformationMessages.DeleteFail}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });
+            }
+        }
+    }
+
+    #endregion =========================================================================================================
+}

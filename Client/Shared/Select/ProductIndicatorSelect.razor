@@ -1,0 +1,59 @@
+﻿@namespace MrsComponent
+@inject ProductIndicatorService productIndicatorService
+
+<MudAutocomplete T ="ViewModels.ProductIndicatorSelectViewModel"
+	Label = "@(Resources.DataDictionary.ProductIndicator)"
+	SearchFunc = "@(Search)"
+	ResetValueOnEmptyText = "true"
+	ToStringFunc="(e => e==null? null : e.Name)"
+	@bind-Value = "@BindTo"
+	Variant = "Variant.Outlined"
+	Clearable = "true"
+	Immediate = "true"
+	Margin ="Margin.Dense"
+	Required = "true"
+	CoerceValue = "true"
+/>
+
+@code {
+	protected async override Task OnInitializedAsync()
+	{
+		SelectList =
+			await productIndicatorService.GetSelectAsync();
+	}
+
+	private IList<ViewModels.ProductIndicatorSelectViewModel> SelectList{ get; set; }
+
+	private async Task<IEnumerable<ViewModels.ProductIndicatorSelectViewModel>> Search(string value)
+	{
+		await Task.Delay(1);
+
+		if (string.IsNullOrEmpty(value))
+		{
+			return SelectList;
+		}
+
+		var data = SelectList;
+
+		return data.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+	}
+
+	private ViewModels.ProductIndicatorSelectViewModel bindingValue =
+		new ViewModels.ProductIndicatorSelectViewModel();
+
+	[Parameter]
+	public ViewModels.ProductIndicatorSelectViewModel BindTo
+	{
+		get => bindingValue;
+		set
+		{
+			if (bindingValue == value) return;
+			bindingValue = value;
+			BindToChanged.InvokeAsync(value);
+		}
+	}
+
+	[Parameter]
+	public EventCallback<ViewModels.ProductIndicatorSelectViewModel> BindToChanged{ get; set; }
+
+}

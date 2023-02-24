@@ -1,0 +1,229 @@
+﻿@page "/ActivityPlan"
+@inject ActivityPlanService activityPlanService
+@inject PlanService planService
+
+@inject NavigationManager navigationManager
+@inject ISnackbar snackbar
+
+
+<PageTitle>@(Resources.DataDictionary.ActivityPlan)</PageTitle>
+
+
+<MrsContainer MaxWidth="MaxWidth.Medium">
+
+    <EditForm Model = "@(activityPlanService.MyActivityPlan)" OnValidSubmit="@(() => HandleValidSubmit() )" OnInvalidSubmit="@(() => HandleInvalidSubmit())">
+        <DataAnnotationsValidator />
+
+        <PlanBaseForm PlanLevel ="@(PlanLevel.ActivityPlan)">
+        
+            <MrsCard>
+
+                <MrsCardHeader>
+                    <MudText Typo="Typo.subtitle2">@($"{Resources.DataDictionary.ActivityPlan}")</MudText>
+                </MrsCardHeader>
+
+                <MrsCardContent>
+                    <MrsContainer MaxWidth = "MaxWidth.Small">
+                        <MrsGrid>
+
+                            <MudItem xs="12">
+                                <ActivitySelect @bind-BindTo = "@(activityPlanService.MyActivityPlan.ActivitySelectViewModel)" />
+                            </MudItem>
+
+                            <MudItem xs = "12">
+                                <BusinessTypeSelect @bind-BindTo = "@(activityPlanService.MyActivityPlan.BusinessType)" />
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudNumericField 
+                                    Variant = "@(Variant.Outlined)"
+                                    Clearable = "true"
+                                    Immediate = "false"
+                                    Label = "@(ForecastFinalPriceLable.ToString())"
+                                    @bind-Value = "@(activityPlanService.MyActivityPlan.ForecastFinalPrice)"
+                                    Margin="Margin.Dense"
+                                    Culture = "@_en"
+                                    Format="N2"
+                                />                            
+                            </MudItem>
+
+                            @if(activityPlanService.MyActivityPlan.ActivitySelectViewModel?.ActivityIndicatorSelectViewModel != null)
+                            {
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.button">@($"{Resources.DataDictionary.ActivityIndicator}: { activityPlanService.MyActivityPlan.ActivitySelectViewModel.ActivityIndicatorSelectViewModel.Name} ")</MudText>
+                            </MudItem>                            
+                            }
+
+                            <MudItem xs="12">
+                                <MudNumericField                                     
+                                    Variant = "@(Variant.Outlined)"
+                                    Clearable = "true"                               
+                                    Label ="@(ForecastLevelLable.ToString())"
+                                    @bind-Value = "@(activityPlanService.MyActivityPlan.ForecastLevel)"
+                                    Margin="Margin.Dense"
+                                    Culture = "@_en"
+                                    Format="N2"
+                                />                              
+            
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudNumericField 
+                                    Variant = "@(Variant.Outlined)"
+                                    Clearable = "true"
+                                    Immediate = "false"
+                                    Label = "@(CapacitylevelLable.ToString())"
+                                    @bind-Value = "@(activityPlanService.MyActivityPlan.Capacitylevel)"
+                                    Margin="Margin.Dense"
+                                    Culture = "@_en"
+                                    Format="N2"
+                                    
+                                />                            
+                            </MudItem>
+
+                        </MrsGrid>
+                    </MrsContainer>
+                </MrsCardContent>
+
+                <MudCardActions>
+                    <MudGrid>
+
+                    </MudGrid>
+                </MudCardActions>
+
+            </MrsCard>
+            
+        </PlanBaseForm>
+
+
+        <br />
+
+        <MudItem xs ="12">
+            <MudPaper>
+                <MudGrid>
+                    <MudItem>
+                        @if(activityPlanService.MyActivityPlan.Id == Guid.Empty)
+                        {
+                            <MrsButtonSubmit ButtonType ="ButtonType.Submit">@Resources.Buttoms.SaveAndContinue</MrsButtonSubmit>
+                        }
+                        else
+                        {
+                            <MrsButtonEdit ButtonType = "ButtonType.Submit">@Resources.Buttoms.EditAndContinue</MrsButtonEdit>
+                        }
+                    </MudItem>
+
+                    <MudItem>
+                        <MrsButton StartIcon = "@(Icons.Filled.ArrowBackIosNew)" OnClick ="@(() => Back())">@Resources.Buttoms.Back</MrsButton>            
+                    </MudItem>
+
+                </MudGrid>
+            
+            </MudPaper>
+        </MudItem>
+
+
+     </EditForm>
+
+</MrsContainer>
+
+@{                         
+    ForecastFinalPriceLable.Clear();
+    ForecastFinalPriceLable.Append($"{Resources.DataDictionary.ForecastFinalPrice} ");
+    ForecastFinalPriceLable.Append($"{Resources.DataDictionary.Year} ");
+    ForecastFinalPriceLable.Append($"{planService.Myplan.Year.Name}");
+
+    ForecastLevelLable.Clear();
+    ForecastLevelLable.Append($"{Resources.DataDictionary.ForecastLevel} ");
+    ForecastLevelLable.Append($"{Resources.DataDictionary.Year} ");
+    ForecastLevelLable.Append(string.IsNullOrEmpty(planService.Myplan.Year.Name.ToString()) ? string.Empty : planService.Myplan.Year.Name.ToString());
+    if(activityPlanService.MyActivityPlan?.ActivitySelectViewModel != null)
+    {
+        ForecastLevelLable.Append($" ({activityPlanService.MyActivityPlan.ActivitySelectViewModel.MetricSelectViewModel.Name})");    
+    }
+                             
+    CapacitylevelLable.Clear();
+    CapacitylevelLable.Append($"{Resources.DataDictionary.Capacitylevel} ");
+    CapacitylevelLable.Append($"{Resources.DataDictionary.Year} ");
+    CapacitylevelLable.Append(string.IsNullOrEmpty(planService.Myplan.Year.Name.ToString()) ? string.Empty : planService.Myplan.Year.Name.ToString());
+    if(activityPlanService.MyActivityPlan?.ActivitySelectViewModel != null)
+    {
+        CapacitylevelLable.Append($" ({activityPlanService.MyActivityPlan.ActivitySelectViewModel.MetricSelectViewModel.Name})");    
+    }
+}   
+@code {
+
+    protected override void OnInitialized()
+    {
+
+    }
+
+    #region Properties =================================================================================================
+
+    [Parameter] public EditFormType Type { get; set; }
+
+    public ViewModels.ActivitySelectViewModel ActivitySelect { get; set; }
+        = new ViewModels.ActivitySelectViewModel();
+
+    public System.Text.StringBuilder ForecastFinalPriceLable { get; set; }
+        = new System.Text.StringBuilder();
+
+    public System.Text.StringBuilder ForecastLevelLable { get; set; } 
+        = new System.Text.StringBuilder();
+
+    public System.Text.StringBuilder CapacitylevelLable { get; set; } 
+        = new System.Text.StringBuilder();
+
+    public System.Globalization.CultureInfo _en = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+    private async void HandleValidSubmit()
+    {
+        ViewModels.ActivityPlanViewModel result =
+            new ViewModels.ActivityPlanViewModel();
+
+        if(activityPlanService.MyActivityPlan.Id == Guid.Empty)
+        {
+            result =
+               await activityPlanService.PostAsync(activityPlanService.MyActivityPlan);
+        }
+        else
+        {
+            result =
+                await activityPlanService.PutAsync(activityPlanService.MyActivityPlan);
+        }
+
+
+        activityPlanService.MyActivityPlan.Id = result.Id;
+
+        if(result != null)
+        {           
+            snackbar.Add($"{Resources.InformationMessages.SaveSuccess}", Severity.Success, config => { config.Icon = Icons.Filled.Save; });
+            navigationManager.NavigateTo(uri: Resources.LinkCaptions.ProductPlan_Create, forceLoad: false);
+        }
+        else
+            snackbar.Add($"{Resources.InformationMessages.SaveFail}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });       
+
+        
+    }
+
+    protected void HandleInvalidSubmit()
+    {
+         snackbar.Add($"{Resources.InformationMessages.FillAll}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });       
+    }
+
+    protected void BackToIndex()
+    {
+        navigationManager.NavigateTo(Resources.LinkCaptions.Products_Index);        
+    }
+
+    private void Back()
+    {
+        navigationManager.NavigateTo(uri: Resources.LinkCaptions.Plan_Create, forceLoad: false);
+    }
+    #endregion =========================================================================================================
+
+
+}

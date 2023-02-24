@@ -1,0 +1,50 @@
+﻿@namespace MrsComponent
+@inject NavigationManager navigationManager
+@inject ILocalStorageService localStorageService
+@inject AuthenticationStateProvider authenticationStateProvider
+
+
+<AuthorizeView>
+
+	<Authorized>
+		<MudButton 
+           Variant="Variant.Filled"
+           StartIcon="@Icons.Material.Filled.Logout"
+           Color="Color.Error"
+		   FullWidth = "true"
+           ButtonType="ButtonType.Button"	
+		   OnClick = "@(() => Logout())"
+		>
+			@Resources.DataDictionary.Logout
+		</MudButton>
+	</Authorized>
+
+	<NotAuthorized>
+		<MudButton 
+           Variant="Variant.Filled"
+           StartIcon="@Icons.Material.Filled.Login"
+           Color="Color.Info"
+		   FullWidth = "true"
+           ButtonType="ButtonType.Button"	
+		   OnClick = "@(() => Login())"
+		>
+			@Resources.DataDictionary.Login
+		</MudButton>
+	</NotAuthorized>
+
+</AuthorizeView>
+
+@code {
+	void Login()
+	{
+		navigationManager.NavigateTo("/Login", forceLoad:false);
+	}
+
+	async Task Logout()
+	{
+		await localStorageService.RemoveItemAsync(key: "token");
+		await authenticationStateProvider.GetAuthenticationStateAsync();	
+
+		navigationManager.NavigateTo("/Login", forceLoad:false);
+	}
+}

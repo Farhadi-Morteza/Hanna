@@ -1,0 +1,117 @@
+﻿    <MudItem xs="12">
+        <MudPaper Elevation="3">
+
+            <MrsContainer MaxWidth="MaxWidth.ExtraLarge">
+                <MudTimeline TimelineOrientation = "TimelineOrientation.Horizontal" TimelinePosition ="TimelinePosition.Top">
+                    <MudTimelineItem Color ="@(PlanTimeLineColor)" Size = "@(PlanTimeLineSize)" Variant = "Variant.Outlined">
+                        <MudText>@(Resources.DataDictionary.Plan)</MudText>                     
+                    </MudTimelineItem>
+
+                    <MudTimelineItem Color ="@(ActivityTimeLineColor)" Size = "@(ActivityTimeLineSize)" Variant = "Variant.Outlined" >
+                        <MudText>@(Resources.DataDictionary.Activity)</MudText>
+                    </MudTimelineItem>
+
+                    <MudTimelineItem Color ="@(ProductTimeLineColor)" Size = "@(ProductTimeLineSize)" Variant = "Variant.Outlined" >
+                        <MudText>@(Resources.DataDictionary.Product)</MudText>
+                    </MudTimelineItem>
+
+                    <MudTimelineItem Color ="@(CheckoutTimeLineColor)" Size = "@(CheckoutTimeLineSize)" Variant = "Variant.Outlined">
+                        <MudText>@(Resources.DataDictionary.Checkout)</MudText>
+                    </MudTimelineItem>
+
+                </MudTimeline>
+
+            </MrsContainer>
+
+        </MudPaper>
+    </MudItem>
+    <br />
+
+    @(ChildContent)
+
+@code 
+{
+    protected override void OnInitialized()
+    {
+        switch(PlanLevel)
+        {
+            case PlanLevel.Plan:
+                {
+                    PlanTimeLineColor = ToDoColor;
+                    PlanTimeLineSize = ToDoSize;
+                    break;
+                }
+            case PlanLevel.ActivityPlan:
+                {
+                    PlanTimeLineColor = DonColor;
+                    PlanTimeLineSize = DefultSize;
+
+                    ActivityTimeLineColor = ToDoColor;
+                    ActivityTimeLineSize = ToDoSize;
+                    break;
+                }
+            case PlanLevel.ProductPlan:
+                {
+                    PlanTimeLineColor = DonColor;
+                    PlanTimeLineSize = DefultSize;
+
+                    ActivityTimeLineColor = DonColor;
+                    ActivityTimeLineSize = DefultSize;
+
+                    ProductTimeLineColor = ToDoColor;
+                    ProductTimeLineSize = ToDoSize;
+                    break;
+                }
+            case PlanLevel.CheckoutPlan:
+                {
+                    PlanTimeLineColor = DonColor;
+                    PlanTimeLineSize = DefultSize;
+
+                    ActivityTimeLineColor = DonColor;
+                    ActivityTimeLineSize = DefultSize;
+
+                    ProductTimeLineColor = DonColor;
+                    ProductTimeLineSize = DefultSize;
+
+                    CheckoutTimeLineColor = ToDoColor;
+                    CheckoutTimeLineSize = ToDoSize;
+                    break;
+                }
+
+        }
+    }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public PlanLevel PlanLevel { get; set; } = 
+        PlanLevel.Plan;
+
+    public Color ToDoColor { get; set; } = Color.Primary;
+    public Color DonColor { get; set; } = Color.Success;
+    public Size ToDoSize { get; set; } = Size.Medium;
+    public Size DefultSize { get; set; } = Size.Small;
+
+    public Color PlanTimeLineColor { get; set; } = Color.Success;
+    public Size PlanTimeLineSize { get; set; } = Size.Medium;
+
+    public Color ActivityTimeLineColor { get; set; } = Color.Default;
+    public Size ActivityTimeLineSize { get; set; } = Size.Small;
+
+    public Color ProductTimeLineColor { get; set; } = Color.Default;
+    public Size ProductTimeLineSize { get; set; } = Size.Small;
+
+    public Color CheckoutTimeLineColor { get; set; } = Color.Default;
+    public Size CheckoutTimeLineSize { get; set; } = Size.Small;
+
+    
+    public void myPlanTimeLine()
+    {
+
+        PlanTimeLineColor = Color.Primary;
+        PlanTimeLineSize = Size.Medium;
+
+        StateHasChanged();
+    }
+}

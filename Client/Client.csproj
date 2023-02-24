@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Shared\Components\Authentication\**" />
+	  <Content Remove="Shared\Components\Authentication\**" />
+	  <EmbeddedResource Remove="Shared\Components\Authentication\**" />
+	  <None Remove="Shared\Components\Authentication\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Blazored.LocalStorage" Version="4.2.0" />
+		<PackageReference Include="BlazorPro.Spinkit" Version="1.2.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.7" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.7" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.7" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="6.0.7" />
+		<PackageReference Include="Microsoft.Extensions.Localization" Version="6.0.7" />
+		<PackageReference Include="MudBlazor" Version="6.0.10" />
+		<PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="Shared\Components\Dialogs\MrsDialogDelete.razor" />
+		<None Include="Shared\Components\FormControls\MrsAutocomplete.razor" />
+		<None Include="Shared\Components\FormControls\MrsDropdownList.razor" />
+		<None Include="Shared\Components\Grids\MrsItem.razor" />
+		<None Include="Shared\Components\MessageBoxs\MrsMessageBoxDeleteConfirm.razor" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Data\Data.csproj" />
+		<ProjectReference Include="..\Models\Models.csproj" />
+		<ProjectReference Include="..\Resources\Resources.csproj" />
+		<ProjectReference Include="..\ViewModels\ViewModels.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Infrastructure\Enums\" />
+	  <Folder Include="Properties\PublishProfiles\" />
+	</ItemGroup>
+
+</Project>

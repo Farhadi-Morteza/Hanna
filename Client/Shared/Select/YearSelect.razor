@@ -1,0 +1,60 @@
+﻿@namespace MrsComponent
+@inject YearService yearService
+
+<MudAutocomplete T="ViewModels.YearSelectViewModel"
+                    Label = "@(Resources.DataDictionary.Year)"
+                    SearchFunc = "@(Search)"
+                    ResetValueOnEmptyText = "true"
+                    ToStringFunc="@(e => e==null? null : e.Name.ToString())"
+                    @bind-Value = "@BindTo"
+                    Variant = "Variant.Outlined"
+                    Clearable="@(Clearable)"
+                    Immediate="true"
+                    Margin="Margin.Dense"
+                    Required="@(Required)"
+                    CoerceValue="true"                    
+                />
+
+@code {
+    protected async override Task OnInitializedAsync()
+    {
+        SelectList =
+            await yearService.GetSelectAsync();
+    }
+
+    [Parameter] public bool Required { get; set; } = false;
+    [Parameter] public bool Clearable { get; set; } = true;
+
+    private IList<ViewModels.YearSelectViewModel> SelectList { get; set; }  
+
+    private async Task<IEnumerable<ViewModels.YearSelectViewModel>> Search(string value)
+    {
+        await Task.Delay(1);
+
+        if (string.IsNullOrEmpty(value))
+        {
+            return SelectList;
+        }
+
+        var data = SelectList;
+
+        return data.Where(x => x.Name.ToString().Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    private ViewModels.YearSelectViewModel bindingValue = 
+        new ViewModels.YearSelectViewModel();
+
+    [Parameter]
+    public ViewModels.YearSelectViewModel BindTo
+    {
+        get => bindingValue;
+        set
+        {
+            if (bindingValue == value) return;
+            bindingValue = value;
+            BindToChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter] public EventCallback<ViewModels.YearSelectViewModel> BindToChanged { get; set; }
+
+}

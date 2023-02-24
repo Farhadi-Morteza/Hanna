@@ -1,0 +1,34 @@
+﻿@page "/Activity/Create"
+@inject NavigationManager navigationManager
+@inject ActivityService activityService
+@inject ISnackbar snackbar
+
+<PageTitle>@(Resources.DataDictionary.Activity)</PageTitle>
+
+<ActivityFormEditor Model="@(Model)" OnValidSubmit ="@(() => Submit())" Type = "EditFormType.Create" />
+
+@code {
+
+    #region Properties =================================================================================================
+
+    public ViewModels.ActivityViewModel Model { get; set; } = new ViewModels.ActivityViewModel();
+
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+    private async Task Submit()
+    {
+        var result = 
+            await activityService.PostAsync(Model);
+        
+        if(result != null)
+        {
+            snackbar.Add($"{Resources.InformationMessages.SaveSuccess}", Severity.Success, config => { config.Icon = Icons.Filled.Save; });
+            //navigationManager.NavigateTo(uri: Resources.LinkCaptions.Activities_Index, forceLoad: false);
+        }
+        else
+            snackbar.Add($"{Resources.InformationMessages.SaveFail}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });      
+    }
+    #endregion =========================================================================================================
+}

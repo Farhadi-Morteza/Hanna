@@ -1,0 +1,105 @@
+﻿@page  "/Companies/Index"
+@inject CompanyService companyService
+@inject NavigationManager navigationManager
+@inject IDialogService dialogService
+@inject ISnackbar snackbar
+
+<PageTitle>@(Resources.DataDictionary.CompaniesList)</PageTitle>
+
+<MrsGrid Justify="Justify.Center">
+
+    <MudItem xs="12">
+        <MrsButtonCreate ButtonType="ButtonType.Button" OnClick="@(() => Create())" />
+    </MudItem>
+
+    <MudBreakpointProvider />
+
+    <MudItem xs="12"></MudItem>
+
+    <MudItem xs="8" Style="text-align:center">
+        <MrsSpinLoader IsLoading="@(Index == null)">
+
+            <MrsTable Items="@Index"
+                      Title="@(Resources.DataDictionary.CompaniesList)"
+                      Dense="true">
+
+                <HeaderContent>
+                    <MrsTh>@(Resources.DataDictionary.Name)</MrsTh>
+                    <MrsTh>@(Resources.DataDictionary.CompanyCategory)</MrsTh>
+                    <MrsTh>@(Resources.DataDictionary.CompanyParent)</MrsTh>
+                    <MrsTh></MrsTh>
+                </HeaderContent>
+
+                <RowTemplate>
+                    <MudTd DataLabel="@(Resources.DataDictionary.Name)">@context.Name</MudTd>
+                    <MudTd DataLabel="@(Resources.DataDictionary.Name)">@context.CompanyCategory.Name</MudTd>
+
+                    <MudTd DataLabel="@(Resources.DataDictionary.Name)">@(@context.CompanyParent == null ? string.Empty : $"{@context.CompanyParent.CompanyCategory.Name}:{@context.CompanyParent.Name}" )</MudTd>
+                    <MudTd Style="text-align:end">
+                        <MudIconButton OnClick="() => Delete(context)" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Class="m-2" Color="Color.Error"></MudIconButton>
+                        <MudIconButton OnClick="() => Edit(context)" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Class="m-2" Color="Color.Info" />
+                    </MudTd>
+                </RowTemplate>
+
+            </MrsTable>
+        </MrsSpinLoader>
+     
+    </MudItem>
+</MrsGrid>
+
+
+@code {
+    #region Constructor ================================================================================================
+
+    protected async override Task OnInitializedAsync()
+    {
+        Index = 
+            await companyService.GetAsync();
+
+        string ss = "haha";
+    }
+
+    #endregion =========================================================================================================
+
+    #region Properties =================================================================================================
+
+    public IList<Models.Company> Index { get; set; }
+
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+    public void Create()
+    {
+        navigationManager.NavigateTo(uri: Resources.LinkCaptions.Company_Create, forceLoad: false);
+    }
+
+    private void Edit(Models.Company editEntity)
+    {
+        navigationManager.NavigateTo(uri: $"{Resources.LinkCaptions.Company_Edit}/{editEntity.Id}", forceLoad: false);
+    }
+
+    private async Task Delete(Models.Company deleteEntity)
+    {
+        var dialog = dialogService.Show<MrsDialogDelete>();
+        var result = await dialog.Result;
+
+        if (result.Cancelled == false)
+        {
+            bool Isdeleted = await companyService.DeleteAsync(deleteEntity.Id.ToString());
+
+            if (Isdeleted)
+            {
+                Index.Remove(deleteEntity);               
+                snackbar.Add($"{Resources.InformationMessages.DeleteSuccess}", Severity.Success, config => { config.Icon = Icons.Filled.Delete; });                
+            }
+            else
+            {
+                snackbar.Add($"{Resources.InformationMessages.DeleteFail}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });
+            }
+        }
+    }
+
+    #endregion =========================================================================================================
+
+}

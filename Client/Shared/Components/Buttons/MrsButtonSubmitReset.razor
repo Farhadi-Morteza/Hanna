@@ -1,0 +1,17 @@
+﻿@namespace MrsComponent
+
+<div class="form-group">
+    <MrsButtonSubmit OnClick="(e) => OnSubmitClick.InvokeAsync(e)" Link="@LinkSubmit" />
+
+    <MrsButtonReset OnClick="(e) => OnResetClick.InvokeAsync(e)" Link="@LinkReset" />
+</div>
+
+@code {
+    [Parameter] public RenderFragment ChildContentSubmit { get; set; }
+
+    [Parameter] public EventCallback<MouseEventArgs> OnSubmitClick { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnResetClick { get; set; }
+
+    [Parameter] public string LinkSubmit { get; set; }
+    [Parameter] public string LinkReset { get; set; }
+}

@@ -1,0 +1,224 @@
+﻿@inject ProductService productService
+@inject ActivityPlanService activityPlanService
+@inject NavigationManager navigationManager
+@inject ISnackbar snackbar
+
+<PageTitle>@(Resources.DataDictionary.ProductActivityPlanList)</PageTitle>
+
+<MrsContainer MaxWidth="MaxWidth.Medium">
+
+	<EditForm Model="@(Model)"
+			  OnValidSubmit="@(() => HandleValidSubmit())"
+			  OnInvalidSubmit="@(() => HandleInvalidSubmit())">
+		<DataAnnotationsValidator />
+
+    <MudItem xs ="12">         
+        <MudPaper>             
+
+            <MrsCardContent>
+                <MudGrid>
+                
+					<MudItem xs="12" sm="6" md="6">
+						<MudField Label="@(Resources.DataDictionary.PlanTitle)" Variant="Variant.Filled" Margin="Margin.Dense">@(Model.ActivityPlanTitel.PlanTitel)</MudField>
+					</MudItem>
+					<MudItem xs="12" sm="6" md="6">
+						<MudField Label="@(Resources.DataDictionary.Year)" Variant="Variant.Filled" Margin="Margin.Dense">@(Model.ActivityPlanTitel.Year)</MudField>
+					</MudItem>
+					<MudItem xs="12" sm="6" md="4">
+						<MudField Label="@(Resources.DataDictionary.PrincipalBusiness)" Variant="Variant.Filled" Margin="Margin.Dense">@(Model.ActivityPlanTitel.PrincipalBusiness)</MudField>
+					</MudItem>
+					<MudItem xs="12" sm="6" md="4">
+						<MudField Label="@(Resources.DataDictionary.Business)" Variant="Variant.Filled" Margin="Margin.Dense">@(Model.ActivityPlanTitel.Business)</MudField>
+					</MudItem>
+					<MudItem xs="12" sm="6" md="4">
+						<MudField Label="@(Resources.DataDictionary.Activity)" Variant="Variant.Filled" Margin="Margin.Dense">@(Model.ActivityPlanTitel.Activity)</MudField>
+					</MudItem>
+               
+                </MudGrid>
+            </MrsCardContent>
+
+        </MudPaper>
+    </MudItem>
+    <br />
+
+	<MudCard>
+		<MrsCardContent>
+		<MrsContainer MaxWidth="MaxWidth.Small">
+			<MrsGrid>
+
+				<MudItem xs="12">
+					<ProductFilterByActivityIdSelect 
+						ActivityId = "@(Model.ActivityPlanTitel.ActivityId.ToString())" 
+						@bind-BindTo = "@(Model.ProductSelectViewModel)"
+					/>
+				</MudItem>
+
+
+				<MudItem xs="12">
+					<MudNumericField Variant="@(Variant.Outlined)"
+										Clearable="false"
+										Immediate="false"
+										Label="@(ForecastProduction.ToString())"
+										@bind-Value="@(Model.ForecastProduction)"
+										Margin="Margin.Dense"
+										Culture="@_en"
+										HideSpinButtons = "true"
+					/>
+				</MudItem>
+
+				<MudItem xs="12">
+					<MudNumericField Variant="@(Variant.Outlined)"
+										Clearable="false"
+										Label="@(ForecastSales.ToString())"
+										@bind-Value="@(Model.ForecastSales)"
+										Margin="Margin.Dense"
+										Culture="@_en"
+										HideSpinButtons = "true"
+					/>
+				</MudItem>
+
+				<MudItem xs="12">
+					<MudNumericField Variant="@(Variant.Outlined)"
+										Clearable="false"
+										Immediate="false"
+										Label="@(SalePerProductUnit.ToString())"
+										@bind-Value="@(Model.SalePerProductUnit)"
+										Margin="Margin.Dense"
+										Culture="@_en"
+										HideSpinButtons = "true"
+					/>
+				</MudItem>
+
+				<MudItem xs="12">
+					<MudNumericField Variant="@(Variant.Outlined)"
+										Clearable="false"
+										Immediate="false"
+										Label="@(Resources.DataDictionary.PercentageOfSalesShare)"
+										@bind-Value="@(Model.PercentageOfSalesShare)"
+										Margin="Margin.Dense"
+										Culture="@_en"
+										HideSpinButtons = "true"
+					/>
+				</MudItem>
+
+				<MudItem xs="12">
+					<MudField Variant="@(Variant.Outlined)"
+										Label="@(ForecastIncom.ToString())"
+										Margin="Margin.Dense"
+					>
+					@(Model.ForecastIncom)	
+					</MudField>
+				</MudItem>
+
+			</MrsGrid>
+		</MrsContainer>
+		</MrsCardContent>
+		<MudCardActions>
+		</MudCardActions>
+
+	</MudCard>>
+
+		<br />
+
+		<MudItem xs="12">
+			<MudPaper>
+				<br />
+				<MudContainer>
+					<MudGrid>						 
+						<MudStack Row = "true" Spacing = "1">					
+							@if (Type == EditFormType.Create)
+							{
+								<MrsButtonSubmit ButtonType="ButtonType.Submit"></MrsButtonSubmit>
+							}
+							else
+							{
+								<MrsButtonEdit ButtonType="ButtonType.Submit"></MrsButtonEdit>
+							}
+							<MrsButton StartIcon="@(Icons.Filled.ArrowBackIosNew)" OnClick="@(() => Back())">@Resources.Buttoms.Back</MrsButton>
+						</MudStack>						
+					</MudGrid>
+				</MudContainer>
+				<br />
+			</MudPaper>
+		</MudItem>
+
+	</EditForm>
+</MrsContainer>
+
+@{
+	ForecastProduction.Clear();
+	ForecastProduction.Append($"{Resources.DataDictionary.ForecastProduction} ");
+	ForecastProduction.Append($"{Resources.DataDictionary.Year} ");
+	ForecastProduction.Append($"{Model.ActivityPlanTitel?.Year}");
+	ForecastProduction.Append($"({Model.ProductSelectViewModel?.MetricSelectViewModel?.Name})");
+
+	ForecastSales.Clear();
+	ForecastSales.Append($"{Resources.DataDictionary.ForecastSales} ");
+	ForecastSales.Append($"{Resources.DataDictionary.Year} ");
+	ForecastSales.Append(Model.ActivityPlanTitel?.Year);
+	ForecastSales.Append($"({Model.ProductSelectViewModel?.MetricSelectViewModel?.Name})");
+
+	SalePerProductUnit.Clear();
+	SalePerProductUnit.Append($"{Resources.DataDictionary.SalePerProductUnit} ");
+	SalePerProductUnit.Append($"{Resources.DataDictionary.Year} ");
+	SalePerProductUnit.Append(Model.ActivityPlanTitel?.Year);
+	SalePerProductUnit.Append($"({Resources.DataDictionary.Rials})");
+
+	ForecastIncom.Clear();
+	ForecastIncom.Append($"{Resources.DataDictionary.ForecastIncom} ");
+	ForecastIncom.Append($"{Resources.DataDictionary.Year} ");
+	ForecastIncom.Append(Model.ActivityPlanTitel?.Year);
+
+}
+
+@code {
+
+	#region Properties =================================================================================================
+
+	[Parameter]
+	public ViewModels.ProductActivityPlanViewModel Model { get; set; } =
+		new ViewModels.ProductActivityPlanViewModel();
+
+	[Parameter] 
+	public EditFormType Type { get; set; }
+
+	[Parameter] 
+	public EventCallback OnValidSubmit { get; set; }
+
+	public System.Text.StringBuilder ForecastProduction { get; set; }
+		= new System.Text.StringBuilder();
+
+	public System.Text.StringBuilder ForecastSales { get; set; }
+		= new System.Text.StringBuilder();
+
+	public System.Text.StringBuilder SalePerProductUnit { get; set; }
+		= new System.Text.StringBuilder();
+
+	public System.Text.StringBuilder ForecastIncom { get; set; }
+		= new System.Text.StringBuilder();
+
+	public System.Globalization.CultureInfo _en = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+
+
+	#endregion =========================================================================================================
+
+	#region Method =====================================================================================================
+
+	private void HandleValidSubmit()
+	{
+		OnValidSubmit.InvokeAsync(Model);
+	}
+
+	protected void HandleInvalidSubmit()
+	{
+		snackbar.Add($"{Resources.InformationMessages.FillAll}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });
+	}
+
+	private void Back()
+	{
+		navigationManager.NavigateTo(uri: $"{Resources.LinkCaptions.ProductActivityPlans_Index}/{Model.ActivityPlanTitel.Id}", forceLoad: false);
+	}
+
+	#endregion =========================================================================================================
+}
+

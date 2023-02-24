@@ -1,0 +1,79 @@
+﻿@namespace MrsComponent
+@inject PrincipalBusinessService pbService
+
+<MudAutocomplete T="ViewModels.PrincipalBusinessSelectViewModel"
+                    Label = "@(Resources.DataDictionary.PrincipalBusiness)"
+                    SearchFunc = "@(Search)"
+                    ResetValueOnEmptyText = "true"
+                    ToStringFunc="@(e => e==null? null : e.Name)"
+                    @bind-Value = "@BindTo"
+                    Variant = "Variant.Outlined"
+                    Clearable="true"
+                    Immediate="true"
+                    Error = "@Error"
+                    Margin="Margin.Dense"
+                    Required="true"
+                    CoerceValue="true"
+                />
+
+@code {
+    
+     private IEnumerable<string> Validate(string value)
+    {        
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            yield return "The State field is required";
+            yield break;
+        }
+        
+        var data = SelectList;// await CountryService.GetAsync();
+
+        data.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+
+        if (!data.Any())
+        {
+            yield return "This is an incorrect value";
+        }
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        SelectList =
+            await pbService.GetSelectAsync();
+    }
+
+    private IList<ViewModels.PrincipalBusinessSelectViewModel> SelectList { get; set; } 
+
+    [Parameter] public bool Error { get; set; } = false;    
+
+    private async Task<IEnumerable<ViewModels.PrincipalBusinessSelectViewModel>> Search(string value)
+    {
+        await Task.Delay(1);
+
+        if (string.IsNullOrEmpty(value))
+        {
+            return SelectList;
+        }
+
+        var data = SelectList;// await CountryService.GetAsync();
+
+        return data.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    private ViewModels.PrincipalBusinessSelectViewModel bindingValue = 
+        new ViewModels.PrincipalBusinessSelectViewModel();
+
+    [Parameter]
+    public ViewModels.PrincipalBusinessSelectViewModel BindTo
+    {
+        get => bindingValue;
+        set
+        {
+            if (bindingValue == value) return;
+            bindingValue = value;
+            BindToChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter] public EventCallback<ViewModels.PrincipalBusinessSelectViewModel> BindToChanged { get; set; }
+
+}

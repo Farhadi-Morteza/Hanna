@@ -1,0 +1,162 @@
+﻿@page  "/Activities/Index"
+@attribute [Authorize(Roles = "Admin, User")]
+
+@inject ActivityService activityService
+@inject NavigationManager navigationManager
+@inject IDialogService dialogService
+@inject ISnackbar snackbar
+
+<PageTitle>@(Resources.DataDictionary.ActivitiesList)</PageTitle>
+
+<MrsGrid Justify="Justify.Center">
+
+    <MudItem xs ="11">
+        <MudPaper>        
+            <MudGrid>
+                <MudItem>
+                     <MrsButtonCreate ButtonType="ButtonType.Button" OnClick="@(() => Create())" />    
+                </MudItem>
+            </MudGrid>                 
+        </MudPaper>
+    </MudItem>
+
+    <MudBreakpointProvider />
+
+    <MudItem xs="11" Style="text-align:center">
+        <MrsSpinLoader IsLoading="@(Index == null)">
+
+            <MrsTable Items="@Index"
+                      Title="@(Resources.DataDictionary.ActivitiesList)"
+                      Dense="true">
+
+                <HeaderContent>
+                    <MrsTh>@(Resources.DataDictionary.Name)</MrsTh>
+                    <MrsTh>@(Resources.DataDictionary.IsActive)</MrsTh>
+                    <MrsTh>@(Resources.DataDictionary.Business)</MrsTh>
+                    <MrsTh>@(Resources.DataDictionary.ActivityIndicator)</MrsTh>
+                    <MrsTh>@(Resources.DataDictionary.ProductList)</MrsTh>
+                    <MrsTh></MrsTh>
+                </HeaderContent>
+
+                <RowTemplate>
+                    <MudTd DataLabel="@(Resources.DataDictionary.Name)">@context.Name</MudTd>
+                    <MudTd DataLabel=@(Resources.DataDictionary.IsActive)>
+                        <MrsCheckBox @bind-Checked="@context.IsActive" Disabled="true"></MrsCheckBox>
+                    </MudTd>
+                    <MudTd DataLabel="@(Resources.DataDictionary.Business)">@context.Business.Name</MudTd>
+                    <MudTd DataLabel="@(Resources.DataDictionary.ActivityIndicator)">@context.ActivityIndicator.Name</MudTd>
+                    <MudTd DataLabel="@(Resources.DataDictionary.ProductList)">
+                        @{System.Text.StringBuilder AcitvityProducts = new System.Text.StringBuilder("");}
+                        @if(@context.Products.Count() == 0)
+                        {
+                            AcitvityProducts.Append(Resources.DataDictionary.Nothing);
+                        }
+                        else
+                        {
+                            foreach (var Product in @context.Products)
+                            {
+                                if(Product.IsDeleted == false)
+                                {
+                                    AcitvityProducts.Append(Product.Name + ", ");
+                                }
+                            }                            
+                        }
+   
+                @*    @(AcitvityProducts.ToString()) *@  
+                    <MudLink Href="@($"{Resources.LinkCaptions.ActivityProduct}/{@context.Id}")">@(AcitvityProducts.ToString())</MudLink>  
+                    </MudTd>
+                    <MudTd Style="text-align:end">
+                        <MudIconButton OnClick="() => Delete(context)" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Class="m-2" Color="Color.Error"></MudIconButton>
+                        <MudIconButton OnClick="() => Edit(context)" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Class="m-2" Color="Color.Info" />
+                    </MudTd>
+                </RowTemplate>
+
+            </MrsTable>
+        </MrsSpinLoader>
+     
+    </MudItem>
+</MrsGrid>
+
+@code {
+
+    #region Constructor ================================================================================================
+
+    protected async override Task OnInitializedAsync()
+    {
+        Index = 
+            await activityService.GetAsync();
+
+    }
+
+    #endregion =========================================================================================================
+
+    #region Properties =================================================================================================
+
+    public IList<Models.Activity> Index { get; set; }
+
+    System.Text.StringBuilder sb = new System.Text.StringBuilder("ABC", 50);
+
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+    public void Create()
+    {
+        navigationManager.NavigateTo(uri: Resources.LinkCaptions.Activity_Create, forceLoad: false);
+    }
+
+    private void Edit(Models.Activity editEntity)
+    {
+        //var entity =
+        //    new ViewModels.ActivityViewModel()
+        //        {
+        //            Id = editEntity.Id,
+        //            Name = editEntity.Name,
+        //            IsActive = editEntity.IsActive,
+        //            BusinessId = editEntity.BusinessId,
+        //            Business = new ViewModels.BusinessSelectViewModel()
+        //            {
+        //                Id = editEntity.Business.Id,
+        //                Name = editEntity.Business.Name
+        //            },
+        //            ActivityIndicatorId = editEntity.ActivityIndicatorId,
+        //            ActivityIndicator = new ViewModels.ActivityIndicatorSelectViewModel()
+        //            {
+        //                Id = editEntity.ActivityIndicator.Id,
+        //                Name = editEntity.ActivityIndicator.Name
+        //            }
+
+        //        };
+
+        navigationManager.NavigateTo(uri: $"{Resources.LinkCaptions.Activity_Edit}/{editEntity.Id}", forceLoad: false);
+    }
+
+    private void ManageProduct(Models.Activity entity)
+    {
+        navigationManager.NavigateTo(uri: $"{Resources.LinkCaptions.Activity_Edit}/{entity.Id}", forceLoad: false);
+    }
+
+    private async Task Delete(Models.Activity deleteEntity)
+    {
+        var dialog = dialogService.Show<MrsDialogDelete>();
+        var result = await dialog.Result;
+
+        if (result.Cancelled == false)
+        {
+            bool Isdeleted = await activityService.DeleteAsync(deleteEntity.Id.ToString());
+
+            if (Isdeleted)
+            {
+                Index.Remove(deleteEntity);               
+                snackbar.Add($"{Resources.InformationMessages.DeleteSuccess}", Severity.Success, config => { config.Icon = Icons.Filled.Delete; });                
+            }
+            else
+            {
+                snackbar.Add($"{Resources.InformationMessages.DeleteFail}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });
+            }
+        }
+    }
+
+    #endregion =========================================================================================================
+
+}

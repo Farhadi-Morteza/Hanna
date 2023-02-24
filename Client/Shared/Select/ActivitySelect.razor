@@ -1,0 +1,64 @@
+﻿@namespace MrsComponent
+@inject ActivityService activityService
+
+<MudAutocomplete T ="ViewModels.ActivitySelectViewModel"
+	Label = "@(Resources.DataDictionary.Activity)"
+	SearchFunc = "@(Search)"
+	ResetValueOnEmptyText = "true"
+	ToStringFunc="(e => e==null? null : e.Name)"
+	@bind-Value = "@BindTo"
+	Variant = "Variant.Outlined"
+	Clearable = "true"
+	Immediate = "true"
+	Margin ="Margin.Dense"
+	Required = "true"
+	CoerceValue = "true"
+	Disabled = "@(Disabled)"
+/>
+
+@code {
+
+	[Parameter]
+	public bool Disabled { get; set; } = false;
+
+	protected async override Task OnInitializedAsync()
+	{
+		SelectList =
+			await activityService.GetSelectAsync();
+	}
+
+	private IList<ViewModels.ActivitySelectViewModel> SelectList{ get; set; }
+
+	private async Task<IEnumerable<ViewModels.ActivitySelectViewModel>> Search(string value)
+	{
+		await Task.Delay(1);
+
+		if (string.IsNullOrEmpty(value))
+		{
+			return SelectList;
+		}
+
+		var data = SelectList;
+
+		return data.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+	}
+
+	private ViewModels.ActivitySelectViewModel bindingValue =
+		new ViewModels.ActivitySelectViewModel();
+
+	[Parameter]
+	public ViewModels.ActivitySelectViewModel BindTo
+	{
+		get => bindingValue;
+		set
+		{
+			if (bindingValue == value) return;
+			bindingValue = value;
+			BindToChanged.InvokeAsync(value);
+		}
+	}
+
+	[Parameter]
+	public EventCallback<ViewModels.ActivitySelectViewModel> BindToChanged{ get; set; }
+
+}

@@ -1,0 +1,15 @@
+﻿@using MudBlazor.Utilities;
+
+@namespace MudBlazor
+@inherits MudComponentBase
+
+<th scope="col" class="@Classname" style="text-align:center @Style" @attributes="@UserAttributes">
+    @ChildContent
+</th>
+
+@code {
+    protected string Classname => new CssBuilder("mud-table-cell")
+        .AddClass(Class).Build();
+
+    [Parameter] public RenderFragment ChildContent { get; set; }
+}

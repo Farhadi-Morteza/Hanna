@@ -1,0 +1,90 @@
+﻿@inject NavigationManager navigationManager
+
+
+<MrsContainer MaxWidth="MaxWidth.ExtraSmall">
+    <EditForm Model="@(Model)" OnValidSubmit="@(() => HandleValidSubmit())" OnInvalidSubmit="@(() => HandleInvalidSubmit())">
+        <DataAnnotationsValidator />
+
+        <MrsCard>
+
+            <MrsCardHeader>
+                @*<MudText Typo="Typo.subtitle2">@($"{Resources.DataDictionary.PrincipalBusiness}")</MudText>*@
+            </MrsCardHeader>
+
+            <MrsCardContent>
+                <MrsGrid>
+                    <MudFocusTrap DefaultFocus="DefaultFocus.Element"></MudFocusTrap>
+                    <MudItem xs="12">
+                        <MrsTextField @bind-Value="Model.Name"
+                                      Label="@($"{Resources.DataDictionary.PrincipalBusiness}")"
+                                      MaxLength="@(Models.Constant.Length.GENERAL_NAME)"
+                                      For="@(() => Model.Name)"
+                                      Required="true"                                      
+                                      Margin="Margin.Dense"
+                                        >
+                        </MrsTextField>
+                        
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MrsCheckBox @bind-Checked="Model.IsActive" ActiveDeactive="true" />
+                    </MudItem>
+
+                </MrsGrid>
+            </MrsCardContent>
+
+            <MudCardActions>
+                <MudGrid>
+                    <MudItem xs = "6">
+                        @if (Type == EditFormType.Create)
+                        {
+                            <MrsButtonSubmit ButtonType="ButtonType.Submit" FullWidth = "true" />
+                        }
+                        else
+                        {
+                            <MrsButtonEdit ButtonType="ButtonType.Submit" FullWidth = "true" />
+                        }
+                    </MudItem>
+
+                    <MudItem xs = "6">
+                        <MrsButtonReturn ButtonType="ButtonType.Button" OnClick="@(() => BackToIndex())" FullWidth = "true" />
+                    </MudItem>
+
+                </MudGrid>
+            </MudCardActions>
+
+        </MrsCard>
+
+    </EditForm>
+</MrsContainer>
+
+
+@code {
+    #region Properties =================================================================================================
+
+    [Parameter] public ViewModels.PrincipalBusinessViewModel Model { get; set; }
+    [Parameter] public EditFormType Type { get; set; }
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+    private void HandleValidSubmit()
+    {
+        OnValidSubmit.InvokeAsync(Model);
+    }
+
+    protected void HandleInvalidSubmit()
+    {
+        //Message = "Failed to submit form";
+    }
+
+    protected void BackToIndex()
+    {
+        navigationManager.NavigateTo(Resources.LinkCaptions.PrincipalBusiness_Index);
+    }
+
+    #endregion =========================================================================================================
+
+}

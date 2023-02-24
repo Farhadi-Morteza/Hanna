@@ -1,0 +1,226 @@
+﻿@page "/Plans/Index"
+@attribute [Authorize(Roles = "Admin, User")]
+
+@inject PlanService planService
+@inject NavigationManager navigationManager
+@inject IDialogService dialogService
+@inject ISnackbar snackbar
+
+
+<PageTitle>@(Resources.DataDictionary.PlanList)</PageTitle>
+
+
+<MrsGrid Justify="Justify.Center"> 
+
+    <AuthorizeView Roles = "Admin">
+        <NotAuthorized>
+
+        </NotAuthorized>
+        <Authorized>
+			<MudItem xs ="11">
+				<MudPaper>  
+					<MudContainer>						
+						<MudItem>
+							<MrsButtonCreate ButtonType="ButtonType.Button" OnClick="@(() => Create())" />     
+						</MudItem>
+						<MudItem>
+							<MrsButtonCreate ButtonType="ButtonType.Button" OnClick="@(() => CreateNextYearPlans())" >@(Resources.Buttoms.NextYearPlans)</MrsButtonCreate>                  
+						</MudItem>
+						<MudItem>
+							<MrsButtonCreate ButtonType="ButtonType.Button" OnClick="@(() => CreateThisYearPlans())" >@(Resources.Buttoms.ThisYearPlans)</MrsButtonCreate>                  
+						</MudItem>
+					</MudContainer>
+					<MudItem xs="12">
+						<MudAlert Severity="Severity.Warning" Dense="true" ContentAlignment="HorizontalAlignment.Right">برنامه ها قابل حذف نیستند</MudAlert>    
+						<MudAlert Severity="Severity.Warning" Dense="true" ContentAlignment="HorizontalAlignment.Right">هر واحد در هر سال تنها می تواند یک برنامه داشته باشد</MudAlert>      
+						<MudAlert Severity="Severity.Warning" Dense="true" ContentAlignment="HorizontalAlignment.Right">با انتخاب گزینه"ایجاد برنامه سال بعد" می توانید بصورت خودکار برای تمامی واحدها برنامه سال بعد را ایجاد کنید</MudAlert>      
+					</MudItem>           
+				</MudPaper>
+			</MudItem>
+        </Authorized>
+    </AuthorizeView>
+
+
+
+	<MudItem xs="11" Style="text-align:center">
+
+		<MrsSpinLoader IsLoading="@(Index == null)">
+
+
+			<MudTable Items="@Index"
+                      Dense="true"
+                      Hover = "true"
+                      Bordered = "true"
+                      Filter ="new Func<ViewModels.PlanViewModel, bool>(FilterFunc1)"                         
+                        >                               
+			<ToolBarContent>                
+				<MudText Typo="Typo.subtitle1">@($"{Resources.DataDictionary.PlanList}") </MudText>                    
+				<MudSpacer />                
+				<YearSelect  Required = "false" @bind-BindTo ="@(year)"  />                        
+			</ToolBarContent>         
+
+				<HeaderContent>
+					<MrsTh>@(Resources.DataDictionary.Title)    </MrsTh>
+					<MrsTh>@(Resources.DataDictionary.Company)  </MrsTh>
+					<MrsTh>@(Resources.DataDictionary.Year)     </MrsTh>
+					<MrsTh></MrsTh>
+				</HeaderContent>
+
+				<RowTemplate>
+					<MudTd DataLabel="@(Resources.DataDictionary.Title)">                        
+						<MudLink Href="@($"{Resources.LinkCaptions.ActivityPlan_Index}/{context.Id}")">@context.Titel</MudLink>                        
+					</MudTd>
+					<MudTd DataLabel="@(Resources.DataDictionary.Company)">@context.Company.Name</MudTd>
+					<MudTd DataLabel="@(Resources.DataDictionary.Year)">@context.Year.Name</MudTd>     
+
+					<MudTd Style="text-align:end">
+						@*<MudIconButton OnClick="() => Delete(context)" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Class="m-2" Color="Color.Error"></MudIconButton>*@
+						<MudIconButton OnClick="() => Edit(context)" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Class="m-2" Color="Color.Info" />
+					</MudTd>
+				</RowTemplate>
+
+			<PagerContent>
+				<MudTablePager Style="" InfoFormat="@("{first_item}-{last_item} ({all_items})")" RowsPerPageString="@(Resources.DataDictionary.RowsPerPage)" />
+			</PagerContent>
+
+			</MudTable>
+		</MrsSpinLoader>
+
+	</MudItem>
+</MrsGrid>
+
+@code
+{
+	#region Constructor ================================================================================================
+
+	protected async override Task OnInitializedAsync()
+	{
+		Index =
+			await planService.GetAsync();
+
+	}
+
+	#endregion =========================================================================================================
+
+	#region Properties =================================================================================================
+
+	public IList<ViewModels.PlanViewModel> Index { get; set; }
+
+	public ViewModels.YearSelectViewModel year { get; set; } =
+		new ViewModels.YearSelectViewModel();
+
+
+	#endregion =========================================================================================================
+
+	#region Method =====================================================================================================
+
+	private bool FilterFunc1(ViewModels.PlanViewModel plan) => FilterFunc(plan, searchString: year == null ? string.Empty : year.Name.ToString());
+
+	private bool FilterFunc(ViewModels.PlanViewModel plan, string? searchString)
+	{
+		if (string.IsNullOrWhiteSpace(searchString))
+			return true;
+		if (plan.Year.Name.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+			return true;
+		if ($"{plan.Year.Name}".Contains(searchString))
+			return true;
+
+		return false;
+	}
+
+	public void Create()
+	{
+		navigationManager.NavigateTo(uri: Resources.LinkCaptions.Plan_Create, forceLoad: false);
+	}
+
+	private async void CreateNextYearPlans()
+	{
+		var parameters = new DialogParameters();
+		parameters.Add(Constant.DialogParameters.ContentText, Resources.Dialog.NextYearPlansConfirm);
+		parameters.Add(Constant.DialogParameters.ButtonText, Resources.Buttoms.Confirm);
+		parameters.Add(Constant.DialogParameters.Color, Color.Info);
+
+		var dialog = dialogService.Show<MrsDialogTemplating>(Resources.DataDictionary.Warning, parameters);
+		var dialogResult = await dialog.Result;
+
+		if (dialogResult.Cancelled == false)
+		{
+			bool result =
+				await planService.PostAllAsync(true, false);
+
+			if (result)
+			{
+				snackbar.Add($"{Resources.InformationMessages.SaveSuccess}", Severity.Success, config => { config.Icon = Icons.Filled.Save; });
+
+				Index =
+					await planService.GetAsync();
+
+				StateHasChanged();
+			}
+			//else
+			//{
+			//    snackbar.Add($"{Resources.InformationMessages.SaveFail}", Severity.Warning, config => { config.Icon = Icons.Filled.SmsFailed; });                
+			//}
+		}
+	}
+
+	private async void CreateThisYearPlans()
+	{
+		var parameters = new DialogParameters();
+		parameters.Add(Constant.DialogParameters.ContentText, Resources.Dialog.ThisYearPlansConfirm);
+		parameters.Add(Constant.DialogParameters.ButtonText, Resources.Buttoms.Confirm);
+		parameters.Add(Constant.DialogParameters.Color, Color.Info);
+
+		var dialog = dialogService.Show<MrsDialogTemplating>(Resources.DataDictionary.Warning, parameters);
+		var dialogResult = await dialog.Result;
+
+		if (dialogResult.Cancelled == false)
+		{
+			bool result =
+				await planService.PostAllAsync(nextYear: false, thisYear: true);
+
+			if (result)
+			{
+				snackbar.Add($"{Resources.InformationMessages.SaveSuccess}", Severity.Success, config => { config.Icon = Icons.Filled.Save; });
+
+				Index =
+					await planService.GetAsync();
+
+				StateHasChanged();
+			}
+			//else
+			//{
+			//    snackbar.Add($"{Resources.InformationMessages.SaveFail}", Severity.Warning, config => { config.Icon = Icons.Filled.SmsFailed; });                
+			//}
+		}
+	}
+
+	private void Edit(ViewModels.PlanViewModel editEntity)
+	{
+		navigationManager.NavigateTo(uri: $"{Resources.LinkCaptions.ActivityPlan_Index}/{editEntity.Id}", forceLoad: false);
+	}
+
+	private async Task Delete(ViewModels.PlanViewModel deleteEntity)
+	{
+		var dialog = dialogService.Show<MrsDialogDelete>();
+		var result = await dialog.Result;
+
+		if (result.Cancelled == false)
+		{
+			bool Isdeleted = await planService.DeleteAsync(deleteEntity.Id.ToString());
+
+			if (Isdeleted)
+			{
+				Index.Remove(deleteEntity);
+				snackbar.Add($"{Resources.InformationMessages.DeleteSuccess}", Severity.Success, config => { config.Icon = Icons.Filled.Delete; });
+			}
+			//else
+			//{
+			//    snackbar.Add($"{Resources.InformationMessages.DeleteFail}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });
+			//}
+		}
+	}
+
+	#endregion =========================================================================================================
+
+}

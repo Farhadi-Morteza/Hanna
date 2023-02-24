@@ -1,0 +1,13 @@
+﻿@namespace MrsComponent
+
+<MudGrid Spacing="@Spacing" Justify="@Justify">
+    @ChildContent
+</MudGrid>
+
+@code {
+    [Parameter] public int Spacing { set; get; } = 3;
+
+    [Parameter] public Justify Justify { get; set; } = Justify.FlexStart;
+
+    [Parameter] public RenderFragment ChildContent { get; set; }
+}

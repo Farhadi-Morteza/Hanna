@@ -1,0 +1,30 @@
+﻿@inherits LayoutComponentBase
+
+<MudRTLProvider RightToLeft="true">
+	<MudThemeProvider Theme="@(_currentTheme)"></MudThemeProvider>
+	<MudSnackbarProvider />
+
+	<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center" Style="height: 100vh;">
+		<div class="d-flex flex-column mud-width-full">
+			<MudPaper Elevation="25" Class="pa-8" Width="100%" MaxWidth="500px">
+				@*<MudIcon Icon="@Icons.Custom.Brands.MudBlazor" Size="Size.Large" Style="width:100px; height:100px;" />*@
+				<MudImage 
+					Fluid = "true"
+					Src="@(Resources.LinkCaptions.ManaLogo)"
+					Alt="Mana Logo"					
+					Width="70"
+					Height="70"
+					>
+				</MudImage>				
+				<MudItem xs="12"/>
+				<br />
+				@Body
+			</MudPaper>			
+		</div>
+	</MudContainer>
+</MudRTLProvider>
+
+@code
+{
+	private MudTheme _currentTheme = new MainLayoutTheme();
+}

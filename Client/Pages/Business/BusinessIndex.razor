@@ -1,0 +1,119 @@
+﻿@page  "/Business/Index"
+@inject BusinessService businessService
+@inject NavigationManager navigationManager
+@inject IDialogService dialogService
+@inject ISnackbar snackbar
+
+<PageTitle>@(Resources.DataDictionary.BusinessList)</PageTitle>
+
+
+<MrsGrid Justify="Justify.Center">
+
+    <MudItem xs ="8">
+        <MudPaper>        
+            <MudGrid>
+                <MudItem>
+                     <MrsButtonCreate ButtonType="ButtonType.Button" OnClick="@(() => Create())" />    
+                </MudItem>
+            </MudGrid>                 
+        </MudPaper>
+    </MudItem>
+
+    <MudBreakpointProvider />
+
+    <MudItem xs="8" Style="text-align:center">
+        <MrsSpinLoader IsLoading="@(Index == null)">
+
+            <MrsTable Items="@Index"
+                      Title="@(Resources.DataDictionary.BusinessList)"
+                      Dense="true">
+
+                <HeaderContent>
+                    <MrsTh>@(Resources.DataDictionary.Name)</MrsTh>
+                    <MrsTh>@(Resources.DataDictionary.PrincipalBusiness)</MrsTh>
+                    <MrsTh>@(Resources.DataDictionary.IsActive)</MrsTh>
+                    <MrsTh></MrsTh>
+                </HeaderContent>
+
+                <RowTemplate>
+                    <MudTd DataLabel="@(Resources.DataDictionary.Name)">@context.Name</MudTd>
+                    <MudTd DataLabel="@(Resources.DataDictionary.Name)">@context.PrincipalBusiness.Name</MudTd>
+                    <MudTd DataLabel=@(Resources.DataDictionary.IsActive)>
+                        <MrsCheckBox @bind-Checked="@context.IsActive" Disabled="true"></MrsCheckBox>
+                    </MudTd>                    
+                    <MudTd Style="text-align:end">
+                        <MudIconButton OnClick="() => Delete(context)" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Class="m-2" Color="Color.Error"></MudIconButton>
+                        <MudIconButton OnClick="() => Edit(context)" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Class="m-2" Color="Color.Info" />
+                    </MudTd>
+                </RowTemplate>
+
+            </MrsTable>
+        </MrsSpinLoader>
+     
+    </MudItem>
+</MrsGrid>
+
+@*<AuthorizeView Roles="dd">
+    <Authorized>
+        <span>You'r authorized : @context.User.Identity.Name</span>
+    </Authorized>
+    <NotAuthorized>
+        <span> Do you see this? </span>
+    </NotAuthorized>
+</AuthorizeView>*@
+
+@code {
+
+    #region Constructor ================================================================================================
+
+    protected async override Task OnInitializedAsync()
+    {
+        Index = 
+            await businessService.GetAsync();
+
+    }
+
+    #endregion =========================================================================================================
+
+    #region Properties =================================================================================================
+
+    public IList<ViewModels.BusinessViewModel> Index { get; set; }
+
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+    public void Create()
+    {
+        navigationManager.NavigateTo(uri: Resources.LinkCaptions.Business_Create, forceLoad: false);
+    }
+
+    private void Edit(ViewModels.BusinessViewModel editEntity)
+    {
+        navigationManager.NavigateTo(uri: $"{Resources.LinkCaptions.Business_Edit}/{editEntity.Id}", forceLoad: false);
+    }
+
+    private async Task Delete(ViewModels.BusinessViewModel deleteEntity)
+    {
+        var dialog = dialogService.Show<MrsDialogDelete>();
+        var result = await dialog.Result;
+
+        if (result.Cancelled == false)
+        {
+            bool Isdeleted = await businessService.DeleteAsync(deleteEntity.Id.ToString());
+
+            if (Isdeleted)
+            {
+                Index.Remove(deleteEntity);               
+                snackbar.Add($"{Resources.InformationMessages.DeleteSuccess}", Severity.Success, config => { config.Icon = Icons.Filled.Delete; });                
+            }
+            else
+            {
+                snackbar.Add($"{Resources.InformationMessages.DeleteFail}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });
+            }
+        }
+    }
+
+    #endregion =========================================================================================================
+
+}

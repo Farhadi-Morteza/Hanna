@@ -1,0 +1,86 @@
+﻿@inject NavigationManager navigationManager
+
+
+<MudItem xs="11" Style="text-align:center">
+
+		<MrsSpinLoader IsLoading="@(Plans == null)">
+
+
+			<MudTable Items="@Plans"
+                      Dense="true"
+                      Hover = "true"
+                      Bordered = "true"
+					  Striped = "true"
+                      Filter ="new Func<ViewModels.PlanViewModel, bool>(FilterFunc1)"                         
+                        >                               
+			<ToolBarContent>                
+				<MudText Typo="Typo.subtitle1">@($"{Resources.DataDictionary.PlanList}") </MudText>                    
+				<MudSpacer />                
+				<YearSelect  Required = "false" @bind-BindTo ="@(year)"  />                        
+			</ToolBarContent>         
+
+				<HeaderContent>
+					<MrsTh>@(Resources.DataDictionary.Title)    </MrsTh>
+					<MrsTh>@(Data.Constant.CompanyCategories.Part)  </MrsTh>
+					<MrsTh>@(Resources.DataDictionary.Year)     </MrsTh>
+					<MrsTh></MrsTh>
+				</HeaderContent>
+
+				<RowTemplate>
+					<MudTd DataLabel="@(Resources.DataDictionary.Title)">                        
+						<MudLink Href="@($"{Resources.LinkCaptions.ActivityPlan_Index}/{context.Id}")">@context.Titel</MudLink>                        
+					</MudTd>
+					<MudTd DataLabel="@(Resources.DataDictionary.Company)">@context.Company.Name</MudTd>
+					<MudTd DataLabel="@(Resources.DataDictionary.Year)">@context.Year.Name</MudTd>     
+
+					<MudTd Style="text-align:end">
+						@*<MudIconButton OnClick="() => Delete(context)" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Class="m-2" Color="Color.Error"></MudIconButton>*@
+						<MudIconButton OnClick="() => Edit(context)" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Class="m-2" Color="Color.Info" />
+					</MudTd>
+				</RowTemplate>
+
+			<PagerContent>
+				<MudTablePager Style="" InfoFormat="@("{first_item}-{last_item} ({all_items})")" RowsPerPageString="@(Resources.DataDictionary.RowsPerPage)" />
+			</PagerContent>
+
+			</MudTable>
+		</MrsSpinLoader>
+
+	</MudItem>
+
+@code {
+    #region Properties =================================================================================================
+
+    [Parameter] 
+    public IList<ViewModels.PlanViewModel>? Plans { get; set; }
+
+	[Parameter]
+	public Infrastructure.Enums.PlanType PlanType{ get; set; }
+	
+    public ViewModels.YearSelectViewModel year { get; set; } =
+		new ViewModels.YearSelectViewModel();
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+	private bool FilterFunc1(ViewModels.PlanViewModel plan) => FilterFunc(plan, searchString: year == null ? string.Empty : year.Name.ToString());
+
+	private bool FilterFunc(ViewModels.PlanViewModel plan, string? searchString)
+	{
+		if (string.IsNullOrWhiteSpace(searchString))
+			return true;
+		if (plan.Year.Name.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+			return true;
+		if ($"{plan.Year.Name}".Contains(searchString))
+			return true;
+
+		return false;
+	}
+
+	private void Edit(ViewModels.PlanViewModel editEntity)
+	{
+		navigationManager.NavigateTo(uri: $"{Resources.LinkCaptions.ActivityPlan_Index}/{editEntity.Id}", forceLoad: false);
+	}
+
+	#endregion
+}

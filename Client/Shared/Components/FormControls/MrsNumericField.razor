@@ -1,0 +1,43 @@
+﻿@namespace MrsComponent
+
+@typeparam T
+@inherits MudNumericField<T>
+
+<MudNumericField
+	T = "T"
+    Variant = "@(Variant.Outlined)"
+    Clearable = "true"
+    Immediate = "false"
+    Margin = "@(Margin.Dense)"
+    Label = "@(mrsLable)"
+    Culture = "@(_en)"
+    Format = "N2"
+    @bind-Value = "@BindTo"
+>
+</MudNumericField>
+
+         
+
+@code {
+
+    public System.Globalization.CultureInfo _en = 
+        System.Globalization.CultureInfo.GetCultureInfo("en-US");
+    [Parameter]
+    public string mrsLable { get; set; } = string.Empty;
+
+    private T bindingValue;
+
+    [Parameter]
+    public T BindTo
+    {
+        get => bindingValue;
+        set
+        {
+            if (bindingValue is not null) return;
+            bindingValue = value;
+            BindToChanged.InvokeAsync(value);
+        }
+    }
+
+    [Parameter] public EventCallback<T> BindToChanged { get; set; }
+}

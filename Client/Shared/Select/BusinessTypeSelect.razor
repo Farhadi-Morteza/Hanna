@@ -1,0 +1,59 @@
+﻿@namespace MrsComponent
+@inject BusinessTypeService businessTypeService
+
+<MudAutocomplete T ="ViewModels.BusinessTypeSelectViewModel"
+	Label = "@(Resources.DataDictionary.BusinessType)"
+	SearchFunc = "@(Search)"
+	ResetValueOnEmptyText = "true"
+	ToStringFunc="(e => e==null? null : e.Name)"
+	@bind-Value = "@BindTo"
+	Variant = "Variant.Outlined"
+	Clearable = "true"
+	Immediate = "true"
+	Margin ="Margin.Dense"
+	Required = "true"
+	CoerceValue = "true"
+/>
+
+@code {
+	protected async override Task OnInitializedAsync()
+	{
+		SelectList =
+			await businessTypeService.GetSelectAsync();
+	}
+
+	private IList<ViewModels.BusinessTypeSelectViewModel>? SelectList { get; set; }
+
+	private async Task<IEnumerable<ViewModels.BusinessTypeSelectViewModel>> Search(string value)
+	{
+		await Task.Delay(1);
+
+		if (string.IsNullOrEmpty(value))
+		{
+			return SelectList;
+		}
+
+		var data = SelectList;
+
+		return data.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+	}
+
+	private ViewModels.BusinessTypeSelectViewModel bindingValue =
+		new ViewModels.BusinessTypeSelectViewModel();
+
+	[Parameter]
+	public ViewModels.BusinessTypeSelectViewModel BindTo
+	{
+		get => bindingValue;
+		set
+		{
+			if (bindingValue == value) return;
+			bindingValue = value;
+			BindToChanged.InvokeAsync(value);
+		}
+	}
+
+	[Parameter]
+	public EventCallback<ViewModels.BusinessTypeSelectViewModel> BindToChanged{ get; set; }
+
+}

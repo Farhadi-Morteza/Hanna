@@ -1,0 +1,9 @@
+﻿@namespace MrsComponent
+
+<MudCardContent>
+    @ChildContent
+</MudCardContent>
+
+@code {
+	[Parameter] public RenderFragment ChildContent { get; set; }
+}

@@ -1,0 +1,61 @@
+﻿@page "/Business/Edit/{Id}"
+@inject BusinessService businessService
+
+@inject NavigationManager navigationManager
+@inject IDialogService dialogService
+@inject ISnackbar snackbar
+
+<PageTitle>@($"{Resources.DataDictionary.Business} {Resources.DataDictionary.Edit}")</PageTitle>
+
+<BusinessFormEditor Model="@(Model)" OnValidSubmit="@(() => Submit())" Type="EditFormType.Edit" />
+
+@code {
+
+
+    #region Constructor ================================================================================================
+
+    protected async override Task OnInitializedAsync()
+    {
+        if(string.IsNullOrEmpty(Id) == false)
+        {
+            Model =
+                await businessService.GetAsync(query: Id);
+        }
+    }
+
+    #endregion =========================================================================================================
+
+    #region Properties =================================================================================================
+
+    public ViewModels.BusinessViewModel Model { get; set; } = new ViewModels.BusinessViewModel();
+
+    [Parameter] public string Id { get; set; } = string.Empty;
+
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+    private async Task Submit()
+    {
+        var dialog = dialogService.Show<MrsDialogEdit>();
+        var result = await dialog.Result;
+
+        if (result.Cancelled == false)
+        {
+           var Result = await businessService.PutAsync(Model);
+
+           if(Result != null)
+           {
+                snackbar.Add($"{Resources.InformationMessages.EditSuccsess}", Severity.Success, config => { config.Icon = Icons.Filled.Edit; });
+                navigationManager.NavigateTo(uri: Resources.LinkCaptions.Business_Index, forceLoad: false);
+           }
+            else
+                snackbar.Add($"{ Resources.InformationMessages.EditFail}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });
+
+              
+        }
+    }
+
+    #endregion =========================================================================================================   
+
+}

@@ -1,0 +1,47 @@
+﻿@namespace MrsComponent
+@using  System.Globalization
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Nav
+
+<MudGrid>
+    <MudItem xs="6" sm="4" md="2">
+            <MudSelect Placeholder="Select culture"
+                       @bind-Value="@Culture"
+                       AnchorOrigin="Origin.BottomCenter"
+                       Margin="Margin.Normal"
+                       AdornmentIcon="@Icons.Material.Outlined.Language"
+                       AdornmentColor="Color.Surface"
+                       CloseIcon="@Icons.Material.Filled.Flag">
+
+                @foreach (var culture in supportedCultures)
+                {
+                    <MudSelectItem Value="@culture">
+                        @culture.DisplayName
+                    </MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+</MudGrid>
+
+@code {
+    private System.Globalization.CultureInfo[] supportedCultures = new[]
+    {
+        new System.Globalization.CultureInfo("en-US"),
+        new System.Globalization.CultureInfo("fa-IR"),
+    };
+
+    private System.Globalization.CultureInfo Culture
+    {
+        get => System.Globalization.CultureInfo.CurrentCulture;
+        set
+        {
+            if (System.Globalization.CultureInfo.CurrentCulture != value)
+            {
+                var js = (Microsoft.JSInterop.IJSInProcessRuntime)JSRuntime;
+                js.InvokeVoid("blazorCulture.set", value.Name);
+
+                Nav.NavigateTo(Nav.Uri, forceLoad: true);
+            }
+        }
+    }
+}

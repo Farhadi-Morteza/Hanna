@@ -1,0 +1,21 @@
+﻿@namespace MrsComponent
+@inject ISnackbar snackbar
+
+
+
+@code {
+	protected override async Task OnInitializedAsync()
+	{
+		await Task.Delay(5);
+
+		snackbar.Clear();
+		snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomEnd;
+		snackbar.Configuration.SnackbarVariant = Variant.Outlined;
+
+		snackbar.Add("asdfadsfa", severity: Severity.Warning, config => { config.Icon = Icons.Filled.Delete; });
+	}
+
+	private Action actionToRunAfterRender;
+
+	protected void RunAfterRender(Action action) => actionToRunAfterRender.DynamicInvoke(action);
+}

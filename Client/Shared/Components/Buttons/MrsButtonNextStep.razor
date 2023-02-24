@@ -1,0 +1,33 @@
+﻿@namespace MrsComponent
+
+<MudButton Link="@Link"
+           OnClick="(e) => ButtonClicked(e)"
+           Variant="@Variant"
+           StartIcon="@Icons.Filled.NavigateNext"
+           Color="Color.Primary"
+           ButtonType="@ButtonType"
+           FullWidth = "@(FullWidth)"
+            >
+    @if (ChildContent == null)
+    {
+        @Resources.Buttoms.Next
+    }
+    else
+    {
+        @(ChildContent)
+    }
+</MudButton>
+
+@code {
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public string Link { get; set; } = string.Empty;
+    [Parameter] public Variant Variant { get; set; } = Variant.Filled;
+    [Parameter] public ButtonType ButtonType { get; set; }
+    [Parameter] public bool FullWidth { get; set; } = false;
+
+    private void ButtonClicked(MouseEventArgs e)
+    {
+        OnClick.InvokeAsync(e);
+    }
+}

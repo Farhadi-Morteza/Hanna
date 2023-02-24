@@ -1,0 +1,39 @@
+﻿@page "/ProductIndicator/Create"
+@inject ProductIndicatorService productIndicatorService
+
+@inject NavigationManager navigationManager
+@inject ISnackbar snackbar
+
+<PageTitle>@(Resources.DataDictionary.ProductIndicator)</PageTitle>
+
+<ProductIndicatorFormEditor Model="@(Model)" OnValidSubmit = "@(() => Submit())" Type = "EditFormType.Create" />
+
+
+@code {
+  #region Properties =================================================================================================
+
+    public ViewModels.ProductIndicatorViewModel Model { get; set; } = 
+        new ViewModels.ProductIndicatorViewModel();
+
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+    private async Task Submit()
+    {
+        var result = await productIndicatorService.PostAsync(Model);
+        
+        if(result != null)
+        {
+            snackbar.Add($"{Resources.InformationMessages.SaveSuccess}", Severity.Success, config => { config.Icon = Icons.Filled.Save; });
+            //navigationManager.NavigateTo(uri: Resources.LinkCaptions.ProductIndicators_Index, forceLoad: false);
+        }
+        else
+            snackbar.Add($"{Resources.InformationMessages.SaveFail}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });
+
+        
+
+    }
+    #endregion =========================================================================================================
+
+}

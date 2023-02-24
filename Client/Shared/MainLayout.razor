@@ -1,0 +1,156 @@
+﻿@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.SignalR.Client;
+        <MudRTLProvider RightToLeft="true">
+
+            <MudThemeProvider Theme="currentTheme" />
+            <MudDialogProvider />
+            <MudSnackbarProvider />
+
+            <MudLayout>
+                <!--==================================================================================================================================-->
+                <MudAppBar Elevation="25" Dense="true">
+                    <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+                    <!--========================================================================-->
+                    <MudHidden Breakpoint="Breakpoint.Xs">
+                        <MudText Typo="Typo.h6" Class="ml-4">@(Resources.DataDictionary.ApplicationName)</MudText>
+                    </MudHidden>
+                    <!--========================================================================-->
+                    <MudHidden Breakpoint="Breakpoint.Xs" Invert="true">
+                        <MudText Typo="Typo.subtitle2">@(Resources.DataDictionary.ApplicationName)</MudText>
+                    </MudHidden>
+                    <!--========================================================================-->
+                    <MudSpacer />
+                    <!--========================================================================-->
+                    <AuthorizeView>
+                        <Authorized>
+
+                            <MudHidden Breakpoint="Breakpoint.Xs">
+                                <MudText Typo="Typo.h6" Class="ml-4">@context.User.Identity.Name</MudText>
+                            </MudHidden>
+
+                            <MudHidden Breakpoint="Breakpoint.Xs" Invert="true">
+                                <MudText Typo="Typo.subtitle2">@context.User.Identity.Name</MudText>
+                            </MudHidden>
+
+                        </Authorized>
+                    </AuthorizeView>
+                    <!--========================================================================-->
+                    <MudToggleIconButton ToggledChanged="@((e)=> DarkMode())"
+                                         Icon="@Icons.Material.Filled.DarkMode" Color="Color.Inherit" Edge="Edge.Start" Title="Off"
+                                         ToggledIcon="@Icons.Material.Filled.LightMode" ToggledColor="@Color.Inherit" ToggledTitle="On" />
+                    <!--========================================================================-->
+                    <MudMenu Direction="Direction.Left" OffsetX="true" Dense="true" Class="mt-1 ml-4" Icon="@Icons.Outlined.Person" Color="Color.Inherit" OffsetY="true">
+                        <ActivatorContent>
+                            <MudAvatar Image="images/avatar_User.jpg" />
+                        </ActivatorContent>
+                        <ChildContent>
+                            <MudDivider Class="mb-2" />
+                            <MudListItem Text="Account" Icon="@Icons.Material.Outlined.Person" Href="/personal/account" />
+
+                            <MrsButtonLoginLogout/>
+                            @*<MudListItem Text="Logout" Icon="@Icons.Material.Outlined.Login" Href="/pages/Authentication/login" />*@
+                        </ChildContent>
+                    </MudMenu>
+                    <!--========================================================================-->
+                </MudAppBar>
+                <!--==================================================================================================================================-->
+                <!--==================================================================================================================================-->
+                <MudDrawer @bind-Open="@_drawerOpen" Elevation="25" ClipMode="DrawerClipMode.Always">
+                    <NavMenu />
+                </MudDrawer>
+                <!--==================================================================================================================================-->
+                <MudMainContent>
+                        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                            <MudToolBar DisableGutters="true">
+                                <CultureSelect />
+                            </MudToolBar>
+                        </MudHidden>
+                        <MudContainer MaxWidth="MaxWidth.False" Class="mt-4">
+                            <CascadingValue Value="hubConnection">
+                                @Body
+                            </CascadingValue>
+                        </MudContainer>
+                </MudMainContent>
+
+                <!--==================================================================================================================================-->
+                <!--==================================================================================================================================-->
+            </MudLayout>
+
+        </MudRTLProvider>
+
+@code
+{
+    public MainLayoutTheme defaultTheme { get; set; }
+    public MudTheme currentTheme { get; set; }
+    public MainLayoutDarkTheme darkTheme { get; set; }
+
+    public bool rightToLeft { get; set; }   
+    public bool _drawerOpen = true;
+
+    private HubConnection hubConnection;
+    public bool IsConnected => hubConnection.State == HubConnectionState.Connected;
+    private string CurrentUserId { get; set; }
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    private void RightToLeftTheme()
+    {
+        rightToLeft = !rightToLeft;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        StateHasChanged();
+        defaultTheme = new();
+        darkTheme = new();
+        rightToLeft = true;
+        currentTheme = defaultTheme;
+
+        hubConnection = new HubConnectionBuilder().WithUrl(_navigationManager.ToAbsoluteUri("https://localhost:7058/chathub")).Build();
+        await hubConnection.StartAsync();
+        hubConnection.On<string, string, string>("ReceiveChatNotification", (message, receiverUserId, senderUserId) =>
+        {
+            if (CurrentUserId == receiverUserId)
+            {
+                _snackBar.Add(message, Severity.Info, config =>
+                {
+                    config.VisibleStateDuration = 10000;
+                    config.HideTransitionDuration = 500;
+                    config.ShowTransitionDuration = 500;
+                    config.Action = "Chat?";
+                    config.ActionColor = Color.Info;
+                    config.Onclick = snackbar =>
+                    {
+                        _navigationManager.NavigateTo($"chat/{senderUserId}");
+                        return Task.CompletedTask;
+                    };
+                });
+            }
+        });
+        var state = await _stateProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+        CurrentUserId = Guid.NewGuid().ToString();// user.Claims.Where(a => a.Type == "sub").Select(a => a.Value).FirstOrDefault();
+    }
+    
+
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Personal", href: "#"),
+        new BreadcrumbItem("Dashboard", href: "#"),
+    };
+
+    void DarkMode()
+    {
+        if (currentTheme == defaultTheme)
+        {
+            currentTheme = darkTheme;
+        }
+        else
+        {
+            currentTheme = defaultTheme;
+        }
+    }    
+}

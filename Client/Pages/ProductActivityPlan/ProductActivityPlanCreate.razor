@@ -1,0 +1,57 @@
+﻿@page "/ProductActivityPlan/Create/{ActivityPlanId}"
+@inject NavigationManager navigationManager
+@inject ProductActivityPlanService productActivityPlanService
+@inject ISnackbar snackbar
+
+<PageTitle>@(Resources.DataDictionary.ProductPlan)</PageTitle>
+
+<ProductActivityPlanFormEdotor 
+    Model="@(Model)" 
+    OnValidSubmit = "@(() => Submit())" 
+    Type = "@(EditFormType.Create)" 
+    >
+</ProductActivityPlanFormEdotor>
+ 
+
+
+@code {
+    #region Constructor ================================================================================================
+
+    protected async override Task OnInitializedAsync()
+    {
+        if(string.IsNullOrEmpty(ActivityPlanId) == false)
+        {
+            Model =
+                await productActivityPlanService.GetByActivityPlanIdAsync(ActivityPlanId);
+        }
+    }
+
+    #endregion =========================================================================================================
+
+    #region Properties =================================================================================================
+
+    public ViewModels.ProductActivityPlanViewModel Model { get; set; } =
+        new ViewModels.ProductActivityPlanViewModel();
+
+    [Parameter] 
+    public string ActivityPlanId { get; set; } = string.Empty;
+
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+    private async Task Submit()
+    {
+        var result = await productActivityPlanService.PostAsync(Model);
+
+        if(result != null)
+        {
+            snackbar.Add($"{Resources.InformationMessages.SaveSuccess}", Severity.Success, config => { config.Icon = Icons.Filled.Save; });
+            navigationManager.NavigateTo(uri: $"{Resources.LinkCaptions.ProductActivityPlans_Index}/{ActivityPlanId}", forceLoad: false);
+        }
+        else
+            snackbar.Add($"{Resources.InformationMessages.SaveFail}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });
+    }
+    #endregion =========================================================================================================
+
+}

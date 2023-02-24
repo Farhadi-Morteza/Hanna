@@ -1,0 +1,37 @@
+﻿@page "/Product/Create"
+@inject NavigationManager navigationManager
+@inject ProductService productService
+@inject ISnackbar snackbar
+
+<PageTitle>@(Resources.DataDictionary.Product)</PageTitle>
+
+<ProductFormEditor Model="@(Model)" OnValidSubmit ="@(() => Submit())" Type = "EditFormType.Create" />
+
+@code {
+
+    #region Properties =================================================================================================
+
+    public ViewModels.ProductViewModel Model { get; set; } = 
+        new ViewModels.ProductViewModel();
+
+    #endregion =========================================================================================================
+
+    #region Method =====================================================================================================
+
+    private async Task Submit()
+    {
+        var result = 
+            await productService.PostAsync(Model);
+        
+        if(result != null)
+        {
+            snackbar.Add($"{Resources.InformationMessages.SaveSuccess}", Severity.Success, config => { config.Icon = Icons.Filled.Save; });
+            //navigationManager.NavigateTo(uri: Resources.LinkCaptions.Products_Index, forceLoad: false);
+        }
+        else
+            snackbar.Add($"{Resources.InformationMessages.SaveFail}", Severity.Warning, config => { config.Icon = Icons.Filled.Warning; });       
+
+    }
+    #endregion =========================================================================================================
+
+}

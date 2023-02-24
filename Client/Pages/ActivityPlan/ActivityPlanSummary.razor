@@ -1,0 +1,187 @@
+﻿@page "/ActivityPlan/Summary/{Id}"
+@inject ActivityPlanService activityPlanService
+
+@inject NavigationManager navigationManager
+
+<PageTitle>@(Resources.DataDictionary.ActivityPlanSummary)</PageTitle>
+
+<MrsContainer MaxWidth="MaxWidth.Large">
+	<MudPaper>
+		<br />
+		<MrsCardContent>
+            <MudGrid>
+                     
+                <MudStack Row = "true" Spacing = "@(Infrastructure.Constant.ButtonSpacing)">                       
+                    <MudItem>                        
+                        <MrsButtonReturn ButtonType="ButtonType.Button" OnClick="@(() => Return())" /> 
+                        <MrsButtonEdit ButtonType = "ButtonType.Button" OnClick ="@(() => Edit())"></MrsButtonEdit>
+                    </MudItem>
+                </MudStack>
+                    
+            </MudGrid> 
+		</MrsCardContent>
+		<br />
+	</MudPaper>
+</MrsContainer>
+
+<br />
+
+<MrsContainer MaxWidth="MaxWidth.Large">
+	<MudPaper>
+		<MrsCardContent>		
+			<MudGrid>
+				<MudItem xs="12" sm="6" md="6">
+					<MudField Label="@(Resources.DataDictionary.PlanTitle)" Variant="Variant.Filled" Margin="Margin.Dense">@(Model.PlanTitel)</MudField>
+				</MudItem>
+				<MudItem xs="12" sm="6" md="6">
+					<MudField Label="@(Resources.DataDictionary.Year)" Variant="Variant.Filled" Margin="Margin.Dense">@(Model.Year)</MudField>
+				</MudItem>
+
+				<MudItem xs="12" sm="6" md="3">
+					<MudField 
+						Label="@($"{Resources.DataDictionary.PrincipalBusiness}")" 
+						Variant="Variant.Filled" 
+						Margin="Margin.Dense">
+							@(Model.PrincipalBusiness)
+					</MudField>
+				</MudItem>
+				<MudItem xs="12" sm="6" md="3">
+					<MudField Label="@(Resources.DataDictionary.Business)" Variant="Variant.Filled" Margin="Margin.Dense">@(Model.Business)</MudField>
+				</MudItem>
+				<MudItem xs="12" sm="6" md="3">
+					<MudField Label="@(Resources.DataDictionary.Activity)" Variant="Variant.Filled" Margin="Margin.Dense">@(Model.Activity)</MudField>
+				</MudItem>
+				<MudItem xs="12" sm="6" md="3">
+					<MudField Label="@(Resources.DataDictionary.BusinessType)" Variant="Variant.Filled" Margin="Margin.Dense">@(Model.BusinessType)</MudField>
+				</MudItem>
+
+				<MudItem xs="12" sm="6" md="6">
+					<MudField Label="@($"{Resources.DataDictionary.ForecastFinalPrice} ({Resources.DataDictionary.MillionRials})")" 
+					Variant="Variant.Filled" 
+					Margin="Margin.Dense">
+						@(Model.ForecastFinalPrice)
+					</MudField>
+				</MudItem>
+				<MudItem xs="12" sm="6" md="6">
+					<MudField Label="@($"{Resources.DataDictionary.ActivityIndicator}")" 
+					Variant="Variant.Filled" 
+					Margin="Margin.Dense">
+						@(Model.ActivityIndicator)
+					</MudField>
+				</MudItem>
+
+				<MudItem xs="12" sm="6" md="6">
+					<MudField Label="@($"{Resources.DataDictionary.ForecastLevel} ({Model.ActivityIndicatorMetric})")" 
+					Variant="Variant.Filled" 
+					Margin="Margin.Dense">
+						@(Model.ForecastLevel)
+					</MudField>
+				</MudItem>
+				<MudItem xs="12" sm="6" md="6">
+					<MudField Label="@($"{Resources.DataDictionary.Capacitylevel} ({Model.ActivityIndicatorMetric})")" 
+					Variant="Variant.Filled" 
+					Margin="Margin.Dense">
+						@(Model.Capacitylevel)
+					</MudField>
+				</MudItem>
+               
+			</MudGrid>		
+		</MrsCardContent>
+		<MrsCardContent>
+			<MrsSpinLoader IsLoading="@(Model == null)">
+				<MrsTable Items="@Model.ProductActivityPlans" Dense="true" Breakpoint="Breakpoint.Sm" Hover = "true">
+					<HeaderContent>
+						<MrsTh>@($"{Resources.DataDictionary.Product}")</MrsTh>
+						<MrsTh>@($"{Resources.DataDictionary.ForecastProduction}")</MrsTh>
+						<MrsTh>@($"{Resources.DataDictionary.ForecastSales}")</MrsTh>
+						<MrsTh>@($"{Resources.DataDictionary.SalePerProductUnit} ({Resources.DataDictionary.Rials})")</MrsTh>
+						<MrsTh>@($"{Resources.DataDictionary.ForecastIncom} ({Resources.DataDictionary.MillionRials})")</MrsTh>
+					</HeaderContent>
+					<RowTemplate>
+						<MudTd DataLabel=@($"{Resources.DataDictionary.Product}")>@($"{@context.ProductSelectViewModel.Name}({@context.ProductSelectViewModel.ProductTypeSelectViewModel.Name})")</MudTd>
+						<MudTd DataLabel=@($"{Resources.DataDictionary.ForecastProduction}")>@($"{@context.ForecastProduction} ({@context.ProductSelectViewModel.MetricSelectViewModel.Name})")</MudTd>
+						<MudTd DataLabel="@($"{Resources.DataDictionary.ForecastSales}")">@($"{@context.ForecastSales} ({@context.ProductSelectViewModel.MetricSelectViewModel.Name})")</MudTd>
+						<MudTd DataLabel=@($"{Resources.DataDictionary.SalePerProductUnit} ({Resources.DataDictionary.Rials})")>@context.SalePerProductUnit</MudTd>
+						<MudTd DataLabel=@($"{Resources.DataDictionary.ForecastIncom} ({Resources.DataDictionary.MillionRials})")>@context.ForecastIncom.ToMillionRials()</MudTd>
+					</RowTemplate>
+				</MrsTable>
+			</MrsSpinLoader>
+		</MrsCardContent>
+
+		<MrsCardContent>
+			<MudGrid>
+				<MudItem xs="12" sm="6" md="4">
+					<MudField Label="@($"{Resources.DataDictionary.TotalSales} ({Resources.DataDictionary.MillionRials})")"
+					Variant="Variant.Filled"
+					Margin="Margin.Dense">
+							@(TotalSales.ToMillionRials())
+					</MudField>
+				</MudItem>	
+				<MudItem xs="12" sm="6" md="4">
+					<MudField Label="@($"{Resources.DataDictionary.FinalPrice} ({Resources.DataDictionary.MillionRials})")"
+					Variant="Variant.Filled"
+					Margin="Margin.Dense">
+							@(Model.ForecastFinalPrice)
+					</MudField>
+				</MudItem>	
+				<MudItem xs="12" sm="12" md="4">
+					<MudField Label="@($"{Resources.DataDictionary.GrossProfit} ({Resources.DataDictionary.MillionRials})")"
+					Variant="Variant.Filled"
+					Margin="Margin.Dense">
+							@(TotalSales.ToMillionRials() - Model.ForecastFinalPrice)
+					</MudField>						
+				</MudItem>
+			</MudGrid>
+		</MrsCardContent>
+
+	</MudPaper>
+</MrsContainer>
+
+
+
+@code {
+	#region Constructor ================================================================================================
+
+	protected async override Task OnInitializedAsync()
+	{
+		Model =
+			await activityPlanService.GetSummaryAsync(id: Id);
+	}
+
+	protected override void OnParametersSet()
+	{
+		foreach (var item in Model.ProductActivityPlans)
+		{
+			TotalSales = item.ForecastSales * item.SalePerProductUnit;
+		}
+	}
+
+
+	#endregion =========================================================================================================
+
+	#region Properties =================================================================================================
+
+	public ViewModels.ActivityPlanSummaryViewModel Model { get; set; } =
+	new ViewModels.ActivityPlanSummaryViewModel();
+
+	public double TotalSales { get; set; } = 0;
+
+	[Parameter]
+	public string Id { get; set; } = string.Empty;
+
+	#endregion =========================================================================================================
+
+	#region Method =====================================================================================================
+
+	private void Return()
+	{
+		navigationManager.NavigateTo(uri: $"{Resources.LinkCaptions.ActivityPlan_Index}/{Model.PlanId}", forceLoad: false);
+	}
+
+	private void Edit()
+	{
+		navigationManager.NavigateTo(uri: $"{Resources.LinkCaptions.ActivityPlan_Edit}/{Model.ActivityPlanId}", forceLoad: false);
+	}
+
+    #endregion =========================================================================================================
+}

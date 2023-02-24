@@ -1,0 +1,58 @@
+﻿<MudDivider  Class="mb-4" />
+<MudNavMenu Class="mud-width-full">
+    <MudText Typo="Typo.subtitle2" Color="Color.Inherit" Class="ml-4 my-3">مزارع نوین ایرانیان</MudText>
+    <MudDivider Class="my-2" />
+
+    <MudNavLink Href="/Index" Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Home">@(Resources.DataDictionary.Home)</MudNavLink>
+
+    <MudNavLink Href="/Chat" Icon="@Icons.Material.Outlined.Chat">Chat</MudNavLink>
+    <MudNavLink Href="/NewChat" Icon="@Icons.Material.Outlined.Chat">New Chat</MudNavLink>
+ 
+    <MudNavGroup Title="مدیریت برنامه ها" Icon="@Icons.Filled.NextPlan" Expanded="false">
+        <MudNavLink Href="/SuggestedPlan"  Icon="@Icons.Material.Outlined.LocalActivity" >برنامه پیشنهادی</MudNavLink>
+
+        <AuthorizeView Roles = "Admin">
+            <Authorized>
+                 <MudNavLink Href="/CheckoutPlan"  Icon="@Icons.Material.Outlined.LocalActivity" >برنامه های تایید شده</MudNavLink>
+            </Authorized>
+        </AuthorizeView>
+        
+        <MudNavLink Href="/SuggestedPlan"  Icon="@Icons.Material.Outlined.LocalActivity" >شکست برنامه ها</MudNavLink>
+
+        <AuthorizeView Roles = "Admin">
+            <Authorized>
+                 <MudNavLink Href="/SuggestedPlan"  Icon="@Icons.Material.Outlined.LocalActivity" >تائید نهایی</MudNavLink>
+            </Authorized>
+        </AuthorizeView>
+     
+        <MudNavLink Href="/ActivityPlans/Index/{Id}" Icon="@Icons.Material.Outlined.LocalActivity" >مدیریت کسب و کارها</MudNavLink>
+
+
+    </MudNavGroup>
+
+    <MudNavGroup Title="مدیریت فعالیت ها" Icon="@Icons.Filled.Settings" Expanded="false">
+
+        <MudNavLink Href="/PrincipalBusiness/Index"  Icon="@Icons.Material.Outlined.LocalActivity" >مدیریت حوزه ها</MudNavLink>
+        <MudNavLink Href="/Business/Index" Icon="@Icons.Material.Outlined.LocalActivity" >مدیریت کسب و کارها</MudNavLink>
+        <MudNavLink Href="/Activities/Index" Icon="@Icons.Material.Outlined.LocalActivity" >مدیریت فعالیت ها</MudNavLink>
+        <MudNavLink Href="/ActivityIndicators/Index" Icon="@Icons.Material.Outlined.LocalActivity" >مدیریت شاخص فعالیت ها</MudNavLink>
+        <MudNavLink Href="/Products/Index" Icon="@Icons.Material.Outlined.LocalActivity" >مدیریت محصولات</MudNavLink>
+        <MudNavLink Href="/ProductIndicators/Index" Icon="@Icons.Material.Outlined.LocalActivity" >مدیریت شاخص محصولات</MudNavLink>
+        <MudNavLink Href="/Metrics/Index" Icon="@Icons.Material.Outlined.LocalActivity" >مدیریت متریک ها</MudNavLink>
+        <MudNavLink Href="/BusinessTypes/Index" Icon="@Icons.Material.Outlined.LocalActivity" >مدیریت نوع کسب و کار</MudNavLink>
+
+    </MudNavGroup>
+
+    <MudNavGroup Title="تنظیمات" Icon="@Icons.Filled.AdminPanelSettings" Expanded="false">
+
+        <MudNavLink Href="/PrincipalBusiness/Index"  Icon="@Icons.Material.Outlined.Person" >فهرست کاربران</MudNavLink>
+        <MudNavLink Href="/Register"  Icon="@Icons.Material.Outlined.AppRegistration" >ثبت کاربر جدید</MudNavLink>
+        <MudNavLink Href="/Companies/Index" Icon="@Icons.Material.Outlined.Shop" >مدیریت شرکت</MudNavLink>
+
+    </MudNavGroup>
+
+</MudNavMenu>
+
+@code {
+
+}
